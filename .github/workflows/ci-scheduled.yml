@@ -1,0 +1,29 @@
+name: CI (scheduled)
+
+on:
+  schedule:
+    - cron: 0 14 * * 0 # Sunday 2PM UTC = Monday 12AM AEST
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+
+    services:
+      nvector-test-api:
+        image: ghcr.io/ezzatron/nvector-test-api
+        ports:
+          - 17357:8000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Make
+        run: make ci
