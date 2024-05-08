@@ -1,2 +1,3 @@
-# nvector-go
-Functions for performing geographical position calculations using n-vectors
+# _n_-vector
+
+_Functions for performing geographical position calculations using n-vectors_
