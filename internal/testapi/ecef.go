@@ -1,0 +1,52 @@
+package testapi
+
+import (
+	"context"
+
+	"github.com/ezzatron/nvector-go/internal/options"
+	"gonum.org/v1/gonum/mat"
+)
+
+// FromECEF converts an ECEF vector to an n-vector and depth.
+func (c *Client) FromECEF(
+	ctx context.Context,
+	ecef mat.Vector,
+	opts ...options.Option,
+) (mat.Vector, float64, error) {
+	o := options.New(opts)
+
+	type res struct {
+		Nv [][]float64 `json:"n_EB_E"`
+		D  float64     `json:"depth"`
+	}
+
+	r, err := call(ctx, c, unmarshalAs[res], "p_EB_E2n_EB_E", map[string]any{
+		"p_EB_E": marshalVector(ecef),
+		"a":      o.Ellipsoid.SemiMajorAxis,
+		"f":      o.Ellipsoid.Flattening,
+		"R_Ee":   marshalMatrix(o.CoordFrame),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return unmarshalVector(r.Nv), r.D, nil
+}
+
+// ToECEF converts an n-vector and depth to an ECEF vector.
+func (c *Client) ToECEF(
+	ctx context.Context,
+	nv mat.Vector,
+	d float64,
+	opts ...options.Option,
+) (mat.Vector, error) {
+	o := options.New(opts)
+
+	return call(ctx, c, unmarshalVector, "n_EB_E2p_EB_E", map[string]any{
+		"n_EB_E": marshalVector(nv),
+		"depth":  d,
+		"a":      o.Ellipsoid.SemiMajorAxis,
+		"f":      o.Ellipsoid.Flattening,
+		"R_Ee":   marshalMatrix(o.CoordFrame),
+	})
+}

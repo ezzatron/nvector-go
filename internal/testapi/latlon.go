@@ -30,12 +30,12 @@ func (c *Client) ToLatLon(
 ) (float64, float64, error) {
 	o := options.New(opts)
 
-	type latLon struct {
+	type res struct {
 		Lat float64 `json:"latitude"`
 		Lon float64 `json:"longitude"`
 	}
 
-	r, err := call(ctx, c, unmarshalAs[latLon], "n_E2lat_lon", map[string]any{
+	r, err := call(ctx, c, unmarshalAs[res], "n_E2lat_lon", map[string]any{
 		"n_E":  marshalVector(nv),
 		"R_Ee": marshalMatrix(o.CoordFrame),
 	})

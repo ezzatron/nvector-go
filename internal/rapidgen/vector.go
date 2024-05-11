@@ -23,3 +23,16 @@ func UnitVector() *rapid.Generator[mat.Vector] {
 		})
 	})
 }
+
+// VectorRange creates a rapid generator for vectors with a range of magnitudes.
+func VectorRange(min, max float64) *rapid.Generator[mat.Vector] {
+	return rapid.Custom(func(t *rapid.T) mat.Vector {
+		v := UnitVector().Draw(t, "v")
+		m := rapid.Float64Range(min, max).Draw(t, "magnitude")
+
+		r := mat.NewVecDense(3, nil)
+		r.ScaleVec(m, v)
+
+		return r
+	})
+}
