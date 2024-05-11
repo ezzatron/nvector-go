@@ -32,6 +32,7 @@ func Test_FromLatLon(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+
 			got := FromLatLon(latitude, longitude, opts...)
 
 			if !mat.EqualApprox(got, want, 1e-14) {
