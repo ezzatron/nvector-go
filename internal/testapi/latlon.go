@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ezzatron/nvector-go/internal/options"
-	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // FromLatLon converts a geodetic latitude and longitude to an n-vector.
@@ -12,7 +12,7 @@ func (c *Client) FromLatLon(
 	ctx context.Context,
 	lat, lon float64,
 	opts ...options.Option,
-) (mat.Vector, error) {
+) (r3.Vec, error) {
 	o := options.New(opts)
 
 	return call(ctx, c, unmarshalVector, "lat_lon2n_E", map[string]any{
@@ -25,7 +25,7 @@ func (c *Client) FromLatLon(
 // ToLatLon converts an n-vector to a geodetic latitude and longitude.
 func (c *Client) ToLatLon(
 	ctx context.Context,
-	nv mat.Vector,
+	nv r3.Vec,
 	opts ...options.Option,
 ) (float64, float64, error) {
 	o := options.New(opts)

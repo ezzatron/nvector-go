@@ -1,10 +1,9 @@
 package nvector
 
 import (
-	"gonum.org/v1/gonum/mat"
-
 	"github.com/ezzatron/nvector-go/ellipsoid"
 	"github.com/ezzatron/nvector-go/internal/options"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Option is a functional option for n-vector calculations.
@@ -18,7 +17,7 @@ func WithEllipsoid(Ellipsoid ellipsoid.Ellipsoid) Option {
 }
 
 // WithCoordFrame sets the coordinate frame option.
-func WithCoordFrame(CoordFrame mat.Matrix) Option {
+func WithCoordFrame(CoordFrame *r3.Mat) Option {
 	return func(o *options.Options) {
 		o.CoordFrame = CoordFrame
 	}

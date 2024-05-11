@@ -3,8 +3,8 @@ package rapidgen
 import (
 	"math"
 
-	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/num/quat"
+	"gonum.org/v1/gonum/spatial/r3"
 	"pgregory.net/rapid"
 )
 
@@ -32,8 +32,8 @@ func Quaternion() *rapid.Generator[quat.Number] {
 }
 
 // RotationMatrix creates a rapid generator for rotation matrices.
-func RotationMatrix() *rapid.Generator[mat.Matrix] {
-	return rapid.Custom(func(t *rapid.T) mat.Matrix {
+func RotationMatrix() *rapid.Generator[*r3.Mat] {
+	return rapid.Custom(func(t *rapid.T) *r3.Mat {
 		// based on https://github.com/rawify/Quaternion.js/blob/c3834673b502e64e1866dbbf13568c0be93e52cc/q.js#L791
 		q := Quaternion().Draw(t, "quaternion")
 		w, x, y, z := q.Real, q.Imag, q.Jmag, q.Kmag
@@ -48,7 +48,7 @@ func RotationMatrix() *rapid.Generator[mat.Matrix] {
 		yz := y * z
 		zz := z * z
 
-		return mat.NewDense(3, 3, []float64{
+		return r3.NewMat([]float64{
 			1 - 2*(yy+zz), 2 * (xy - wz), 2 * (xz + wy),
 			2 * (xy + wz), 1 - 2*(xx+zz), 2 * (yz - wx),
 			2 * (xz - wy), 2 * (yz + wx), 1 - 2*(xx+yy),

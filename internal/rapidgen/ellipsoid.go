@@ -2,7 +2,7 @@ package rapidgen
 
 import (
 	"github.com/ezzatron/nvector-go/internal/options"
-	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/spatial/r3"
 	"pgregory.net/rapid"
 )
 
@@ -16,7 +16,7 @@ func Depth(e options.Ellipsoid) *rapid.Generator[float64] {
 
 // EcefVector creates a rapid generator for ECEF vectors relative to an
 // ellipsoid.
-func EcefVector(e options.Ellipsoid) *rapid.Generator[mat.Vector] {
+func EcefVector(e options.Ellipsoid) *rapid.Generator[r3.Vec] {
 	// Semi-minor axis
 	b := e.SemiMajorAxis * (1 - e.Flattening)
 

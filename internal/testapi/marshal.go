@@ -1,37 +1,25 @@
 package testapi
 
-import "gonum.org/v1/gonum/mat"
+import (
+	"gonum.org/v1/gonum/spatial/r3"
+)
 
-func marshalMatrix(m mat.Matrix) [][]float64 {
-	r, c := m.Dims()
-	data := make([][]float64, r)
-
-	for i := 0; i < r; i++ {
-		data[i] = make([]float64, c)
-
-		for j := 0; j < c; j++ {
-			data[i][j] = m.At(i, j)
-		}
+func marshalMatrix(m *r3.Mat) [][]float64 {
+	return [][]float64{
+		{m.At(0, 0), m.At(0, 1), m.At(0, 2)},
+		{m.At(1, 0), m.At(1, 1), m.At(1, 2)},
+		{m.At(2, 0), m.At(2, 1), m.At(2, 2)},
 	}
-
-	return data
 }
 
-func marshalVector(v mat.Vector) [][]float64 {
-	r, _ := v.Dims()
-	data := make([][]float64, r)
-
-	for i := 0; i < r; i++ {
-		data[i] = []float64{v.AtVec(i)}
-	}
-
-	return data
+func marshalVector(v r3.Vec) [][]float64 {
+	return [][]float64{{v.X}, {v.Y}, {v.Z}}
 }
 
 func unmarshalAs[J any](data J) J {
 	return data
 }
 
-func unmarshalVector(data [][]float64) mat.Vector {
-	return mat.NewVecDense(3, []float64{data[0][0], data[1][0], data[2][0]})
+func unmarshalVector(data [][]float64) r3.Vec {
+	return r3.Vec{X: data[0][0], Y: data[1][0], Z: data[2][0]}
 }

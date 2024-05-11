@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	. "github.com/ezzatron/nvector-go"
+	"github.com/ezzatron/nvector-go/internal/equality"
 	"github.com/ezzatron/nvector-go/internal/rapidgen"
 	"github.com/ezzatron/nvector-go/internal/testapi"
 	"gonum.org/v1/gonum/floats/scalar"
-	"gonum.org/v1/gonum/mat"
 	"pgregory.net/rapid"
 )
 
@@ -36,13 +36,31 @@ func Test_FromLatLon(t *testing.T) {
 
 			got := FromLatLon(latitude, longitude, opts...)
 
-			if !mat.EqualApprox(got, want, 1e-14) {
+			if !scalar.EqualWithinAbs(got.X, want.X, 1e-14) {
 				t.Errorf(
-					"FromLatLon(%v, %v) = %v; want %v",
+					"FromLatLon(%v, %v) = X: %v; want X: %v",
 					latitude,
 					longitude,
-					got,
-					want,
+					got.X,
+					want.X,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-14) {
+				t.Errorf(
+					"FromLatLon(%v, %v) = Y: %v; want Y: %v",
+					latitude,
+					longitude,
+					got.Y,
+					want.Y,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-14) {
+				t.Errorf(
+					"FromLatLon(%v, %v) = Z: %v; want Z: %v",
+					latitude,
+					longitude,
+					got.Z,
+					want.Z,
 				)
 			}
 		})
@@ -72,16 +90,19 @@ func Test_ToLatLon(t *testing.T) {
 
 			gotLat, gotLon := ToLatLon(nv, opts...)
 
-			latEqual := scalar.EqualWithinAbsOrRel(gotLat, wantLat, 1e-14, 1e-14)
-			lonEqual := scalar.EqualWithinAbsOrRel(gotLon, wantLon, 1e-14, 1e-14)
-
-			if !latEqual || !lonEqual {
+			if !equality.EqualToRadians(gotLat, wantLat, 1e-14) {
 				t.Errorf(
-					"ToLatLon(%v) = (%v, %v); want (%v, %v)",
+					"ToLatLon(%v) = lat: %v; want lat: %v",
 					nv,
 					gotLat,
-					gotLon,
 					wantLat,
+				)
+			}
+			if !equality.EqualToRadians(gotLon, wantLon, 1e-14) {
+				t.Errorf(
+					"ToLatLon(%v) = lon: %v; want lon: %v",
+					nv,
+					gotLon,
 					wantLon,
 				)
 			}

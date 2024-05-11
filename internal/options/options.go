@@ -1,13 +1,13 @@
 package options
 
 import (
-	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Options contains optional parameters for n-vector calculations.
 type Options struct {
 	// CoordFrame defines the axes of the coordinate frame.
-	CoordFrame mat.Matrix
+	CoordFrame *r3.Mat
 
 	// Ellipsoid is the ellipsoid to use for calculations.
 	Ellipsoid Ellipsoid
@@ -19,7 +19,7 @@ type Option func(*Options)
 // New creates a new Options with the given options.
 func New(opts []Option) *Options {
 	o := &Options{
-		CoordFrame: mat.NewDense(3, 3, []float64{
+		CoordFrame: r3.NewMat([]float64{
 			0, 0, 1,
 			0, 1, 0,
 			-1, 0, 0,

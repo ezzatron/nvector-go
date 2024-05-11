@@ -10,7 +10,7 @@ import (
 	"github.com/ezzatron/nvector-go/internal/rapidgen"
 	"github.com/ezzatron/nvector-go/internal/testapi"
 	"gonum.org/v1/gonum/floats/scalar"
-	"gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/spatial/r3"
 	"pgregory.net/rapid"
 )
 
@@ -29,7 +29,7 @@ func Test_FromECEF(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			type inputs struct {
 				Opts []Option
-				ECEF mat.Vector
+				ECEF r3.Vec
 			}
 
 			i := rapid.Custom(func(t *rapid.T) inputs {
@@ -47,12 +47,11 @@ func Test_FromECEF(t *testing.T) {
 				a := o.Ellipsoid.SemiMajorAxis
 				f := o.Ellipsoid.Flattening
 
-				ecefr := mat.NewVecDense(3, nil)
-				ecefr.MulVec(o.CoordFrame, i.ECEF)
+				ecefr := o.CoordFrame.MulVec(i.ECEF)
 
 				// filter vectors where the x or yz components are zero after rotation
 				// this causes a division by zero in the Python implementation
-				if ecefr.AtVec(0) == 0 || ecefr.AtVec(1)+ecefr.AtVec(2) == 0 {
+				if ecefr.X == 0 || ecefr.Y+ecefr.Z == 0 {
 					return false
 				}
 
@@ -60,9 +59,9 @@ func Test_FromECEF(t *testing.T) {
 				// square root of a negative number
 				// not sure why this happens, the math is beyond me
 				e2 := 2*f - math.Pow(f, 2)
-				R2 := math.Pow(ecefr.AtVec(1), 2) + math.Pow(ecefr.AtVec(2), 2)
+				R2 := math.Pow(ecefr.Y, 2) + math.Pow(ecefr.Z, 2)
 				p := R2 / math.Pow(a, 2)
-				q := (1 - e2) / math.Pow(a, 2) * math.Pow(ecefr.AtVec(0), 2)
+				q := (1 - e2) / math.Pow(a, 2) * math.Pow(ecefr.X, 2)
 				r := (p + q - math.Pow(e2, 2)) / 6
 				s := math.Pow(e2, 2) * p * q / (4 * math.Pow(r, 3))
 				if math.IsNaN(s) || s <= 0 {
@@ -82,19 +81,36 @@ func Test_FromECEF(t *testing.T) {
 
 			gotNv, gotD := FromECEF(p, opts...)
 
-			nvEqual := mat.EqualApprox(gotNv, wantNv, 1e-15)
-			dEqual := scalar.EqualWithinAbs(gotD, wantD, 1e-8)
-
-			if !nvEqual || !dEqual {
+			if !scalar.EqualWithinAbs(gotNv.X, wantNv.X, 1e-14) {
 				t.Errorf(
-					"FromECEF(%v) = %v, %v; want %v, %v, (%v, %v)",
+					"FromECEF(%v) = X: %v; want X: %v",
 					p,
-					gotNv,
+					gotNv.X,
+					wantNv.X,
+				)
+			}
+			if !scalar.EqualWithinAbs(gotNv.Y, wantNv.Y, 1e-14) {
+				t.Errorf(
+					"FromECEF(%v) = Y: %v; want Y: %v",
+					p,
+					gotNv.Y,
+					wantNv.Y,
+				)
+			}
+			if !scalar.EqualWithinAbs(gotNv.Z, wantNv.Z, 1e-14) {
+				t.Errorf(
+					"FromECEF(%v) = Z: %v; want Z: %v",
+					p,
+					gotNv.Z,
+					wantNv.Z,
+				)
+			}
+			if !scalar.EqualWithinAbs(gotD, wantD, 1e-8) {
+				t.Errorf(
+					"FromECEF(%v) = D: %v; want D: %v",
+					p,
 					gotD,
-					wantNv,
 					wantD,
-					nvEqual,
-					dEqual,
 				)
 			}
 		})
@@ -127,13 +143,31 @@ func Test_ToECEF(t *testing.T) {
 
 			got := ToECEF(nv, d, opts...)
 
-			if !mat.EqualApprox(got, want, 1e-7) {
+			if !scalar.EqualWithinAbs(got.X, want.X, 1e-7) {
 				t.Errorf(
-					"ToECEF(%v, %v) = %v; want %v",
+					"ToECEF(%v, %v) = X: %v; want X: %v",
 					nv,
 					d,
-					got,
-					want,
+					got.X,
+					want.X,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-7) {
+				t.Errorf(
+					"ToECEF(%v, %v) = Y: %v; want Y: %v",
+					nv,
+					d,
+					got.Y,
+					want.Y,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-7) {
+				t.Errorf(
+					"ToECEF(%v, %v) = Z: %v; want Z: %v",
+					nv,
+					d,
+					got.Z,
+					want.Z,
 				)
 			}
 		})
