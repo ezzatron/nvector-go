@@ -21,3 +21,27 @@ func (c *Client) FromLatLon(
 		"R_Ee":      marshalMatrix(o.CoordFrame),
 	})
 }
+
+// ToLatLon converts an n-vector to a geodetic latitude and longitude.
+func (c *Client) ToLatLon(
+	ctx context.Context,
+	nv mat.Vector,
+	opts ...options.Option,
+) (float64, float64, error) {
+	o := options.New(opts)
+
+	type latLon struct {
+		Lat float64 `json:"latitude"`
+		Lon float64 `json:"longitude"`
+	}
+
+	r, err := call(ctx, c, unmarshalAs[latLon], "n_E2lat_lon", map[string]any{
+		"n_E":  marshalVector(nv),
+		"R_Ee": marshalMatrix(o.CoordFrame),
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return r.Lat, r.Lon, nil
+}
