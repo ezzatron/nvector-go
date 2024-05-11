@@ -17,6 +17,6 @@ func marshalMatrix(m mat.Matrix) [][]float64 {
 	return data
 }
 
-func unmarshalVector(data [][]float64) *mat.VecDense {
+func unmarshalVector(data [][]float64) mat.Vector {
 	return mat.NewVecDense(3, []float64{data[0][0], data[1][0], data[2][0]})
 }
