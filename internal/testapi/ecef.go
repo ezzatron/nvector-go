@@ -20,7 +20,7 @@ func (c *Client) FromECEF(
 		D  float64     `json:"depth"`
 	}
 
-	r, err := call(ctx, c, unmarshalAs[res], "p_EB_E2n_EB_E", map[string]any{
+	data, err := call(ctx, c, unmarshalAs[res], "p_EB_E2n_EB_E", map[string]any{
 		"p_EB_E": marshalVector(ecef),
 		"a":      o.Ellipsoid.SemiMajorAxis,
 		"f":      o.Ellipsoid.Flattening,
@@ -30,7 +30,7 @@ func (c *Client) FromECEF(
 		return r3.Vec{}, 0, err
 	}
 
-	return unmarshalVector(r.Nv), r.D, nil
+	return unmarshalVector(data.Nv), data.D, nil
 }
 
 // ToECEF converts an n-vector and depth to an ECEF vector.

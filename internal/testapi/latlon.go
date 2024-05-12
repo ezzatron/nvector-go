@@ -35,7 +35,7 @@ func (c *Client) ToLatLon(
 		Lon float64 `json:"longitude"`
 	}
 
-	r, err := call(ctx, c, unmarshalAs[res], "n_E2lat_lon", map[string]any{
+	data, err := call(ctx, c, unmarshalAs[res], "n_E2lat_lon", map[string]any{
 		"n_E":  marshalVector(nv),
 		"R_Ee": marshalMatrix(o.CoordFrame),
 	})
@@ -43,5 +43,5 @@ func (c *Client) ToLatLon(
 		return 0, 0, err
 	}
 
-	return r.Lat, r.Lon, nil
+	return data.Lat, data.Lon, nil
 }

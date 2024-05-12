@@ -23,7 +23,7 @@ func (c *Client) FromDelta(
 		ToDepth float64     `json:"z_EB"`
 	}
 
-	r, err := call(
+	data, err := call(
 		ctx,
 		c,
 		unmarshalAs[res],
@@ -41,8 +41,8 @@ func (c *Client) FromDelta(
 		return r3.Vec{}, 0, err
 	}
 
-	to = unmarshalVector(r.To)
-	toDepth = r.ToDepth
+	to = unmarshalVector(data.To)
+	toDepth = data.ToDepth
 
 	return to, toDepth, nil
 }
