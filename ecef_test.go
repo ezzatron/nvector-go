@@ -36,11 +36,9 @@ func Test_FromECEF(t *testing.T) {
 				opts := rapidgen.Options().Draw(t, "opts")
 				o := options.New(opts)
 
-				ecef := rapidgen.EcefVector(o.Ellipsoid).Draw(t, "ecef")
-
 				return inputs{
 					Opts: opts,
-					ECEF: ecef,
+					ECEF: rapidgen.EcefVector(o.Ellipsoid).Draw(t, "ecef"),
 				}
 			}).Filter(func(i inputs) bool {
 				o := options.New(i.Opts)
