@@ -1,0 +1,4 @@
+ignore:
+- internal/equality
+- internal/rapidgen
+- internal/testapi
