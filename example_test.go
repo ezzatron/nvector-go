@@ -124,3 +124,34 @@ func Example_n02() {
 	// Output:
 	// Pos C: lat, long = 53.32637826, 63.46812344 deg, height = 406.00719607 m
 }
+
+// Example 3: ECEF-vector to geodetic latitude
+//
+// Given an ECEF-vector of a position. Find geodetic latitude, longitude and
+// height (using WGS-84 ellipsoid).
+//
+// See: https://www.ffi.no/en/research/n-vector/#example_3
+func Example_n03() {
+	// Position B is given as p_EB_E ("ECEF-vector")
+	// const p_EB_E: Vector3 = apply((n) => n * 6371e3, [0.71, -0.72, 0.1]); // m
+	pb := r3.Scale(6371e3, r3.Vec{X: 0.71, Y: -0.72, Z: 0.1}) // m
+
+	// Find position B as geodetic latitude, longitude and height
+
+	// SOLUTION:
+
+	// Find n-vector from the p-vector:
+	// const [n_EB_E, z_EB] = p_EB_E2n_EB_E(p_EB_E);
+	nvb, db := FromECEF(pb)
+
+	// Convert to lat, long and height:
+	// const [lat_EB, long_EB] = n_E2lat_long(n_EB_E);
+	lat, lon := ToLatLon(nvb)
+	// const h_EB = -z_EB;
+	hb := -db
+
+	fmt.Printf("Pos B: lat, long = %.8f, %.8f deg, height = %.8f m\n", Deg(lat), Deg(lon), hb)
+
+	// Output:
+	// Pos B: lat, long = 5.68507573, -45.40066326 deg, height = 95772.10761822 m
+}
