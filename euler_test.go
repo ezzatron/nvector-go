@@ -204,16 +204,16 @@ func Test_RotMatToEulerZYX(t *testing.T) {
 		})
 
 		wantX, wantY, wantZ := -0.0, math.Pi/2, 0.0
-		gotX, gotY, gotZ := RotMatToEulerXYZ(r)
+		gotX, gotY, gotZ := RotMatToEulerZYX(r)
 
 		if !equality.EqualToRadians(gotX, wantX, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
+			t.Errorf("RotMatToEulerZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
 		}
 		if !equality.EqualToRadians(gotY, wantY, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+			t.Errorf("RotMatToEulerZYX(%v) = Y: %v; want Y: %v", r, gotY, wantY)
 		}
 		if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+			t.Errorf("RotMatToEulerZYX(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
 		}
 	})
 }
