@@ -35,7 +35,8 @@ func WGS84() Ellipsoid {
 	}
 }
 
-// WGS84Sphere is a sphere with the same semi-major axis as the WGS-84 ellipsoid.
+// WGS84Sphere is a sphere with the same semi-major axis as the WGS-84
+// ellipsoid.
 //
 // See: https://github.com/chrisveness/geodesy/blob/761587cd748bd9f7c9825195eba4a9fc5891b859/latlon-ellipsoidal-datum.js#L39
 func WGS84Sphere() Ellipsoid {
