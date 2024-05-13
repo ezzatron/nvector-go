@@ -2,6 +2,7 @@ package nvector_test
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	. "github.com/ezzatron/nvector-go"
@@ -9,6 +10,7 @@ import (
 	"github.com/ezzatron/nvector-go/internal/rapidgen"
 	"github.com/ezzatron/nvector-go/internal/testapi"
 	"gonum.org/v1/gonum/floats/scalar"
+	"gonum.org/v1/gonum/spatial/r3"
 	"pgregory.net/rapid"
 )
 
@@ -137,6 +139,27 @@ func Test_RotMatToEulerXYZ(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("handles Euler angle singularity", func(t *testing.T) {
+		r := r3.NewMat([]float64{
+			0, 0, 1,
+			0, 1, 0,
+			1, 0, 0,
+		})
+
+		wantX, wantY, wantZ := 0.0, math.Pi/2, 0.0
+		gotX, gotY, gotZ := RotMatToEulerXYZ(r)
+
+		if !equality.EqualToRadians(gotX, wantX, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
+		}
+		if !equality.EqualToRadians(gotY, wantY, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+		}
+		if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+		}
+	})
 }
 
 func Test_RotMatToEulerZYX(t *testing.T) {
@@ -171,5 +194,26 @@ func Test_RotMatToEulerZYX(t *testing.T) {
 				t.Errorf("RotMatToEulerZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
 			}
 		})
+	})
+
+	t.Run("handles Euler angle singularity", func(t *testing.T) {
+		r := r3.NewMat([]float64{
+			0, 0, 1,
+			0, 1, 0,
+			1, 0, 0,
+		})
+
+		wantX, wantY, wantZ := -0.0, math.Pi/2, 0.0
+		gotX, gotY, gotZ := RotMatToEulerXYZ(r)
+
+		if !equality.EqualToRadians(gotX, wantX, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
+		}
+		if !equality.EqualToRadians(gotY, wantY, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+		}
+		if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
+			t.Errorf("RotMatToEulerXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+		}
 	})
 }

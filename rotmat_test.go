@@ -117,6 +117,33 @@ func Test_ToRotMat(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("it handles the poles", func(t *testing.T) {
+		nv := r3.Vec{X: 0, Y: 0, Z: 1}
+		want := r3.NewMat([]float64{
+			-1, 0, 0,
+			0, 1, -0,
+			0, 0, -1,
+		})
+		got := ToRotMat(nv)
+
+		for i := 0; i < 3; i++ {
+			for j := 0; j < 3; j++ {
+				if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-14) {
+					t.Errorf(
+						"ToRotMat(%v) = %v,%v: %v; want %v,%v: %v",
+						nv,
+						i,
+						j,
+						got.At(i, j),
+						i,
+						j,
+						want.At(i, j),
+					)
+				}
+			}
+		}
+	})
 }
 
 func Test_WithWanderAzimuthToRotMat(t *testing.T) {
