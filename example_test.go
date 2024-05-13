@@ -5,6 +5,8 @@ import (
 	"math"
 
 	. "github.com/ezzatron/nvector-go"
+	"github.com/ezzatron/nvector-go/ellipsoid"
+	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 1: A and B to delta
@@ -67,4 +69,58 @@ func Example_n01() {
 	// Output:
 	// Delta north, east, down = 331730.23478089436, 332997.8749892695, 17404.271361936346 m
 	// Azimuth = 45.10926323826139 deg
+}
+
+// Example 2: B and delta to C
+//
+// Given the position of vehicle B and a bearing and distance to an object C.
+// Find the exact position of C. Use WGS-72 ellipsoid.
+//
+// See: https://www.ffi.no/en/research/n-vector/#example_2
+func Example_n02() {
+	// delta vector from B to C, decomposed in B is given:
+	bc := r3.Vec{X: 3000, Y: 2000, Z: 100}
+
+	// Position and orientation of B is given:
+	// unit to get unit length of vector
+	b := r3.Unit(r3.Vec{X: 1, Y: 2, Z: 3})
+	bDepth := -400.0
+	// the three angles are yaw, pitch, and roll
+	r := EulerZYXToRotMat(Rad(10), Rad(20), Rad(30))
+
+	// A custom reference ellipsoid is given (replacing WGS-84):
+	// (WGS-72)
+	opts := []Option{WithEllipsoid(ellipsoid.WGS72())}
+
+	// Find the position of C.
+
+	// SOLUTION:
+
+	// Step1: Find R_EN:
+	rb := ToRotMat(b)
+
+	// Step2: Find R_EB, from R_EN and R_NB:
+	// Note: closest frames cancel
+	reb := r3.NewMat(nil)
+	reb.Mul(rb, r)
+
+	// Step3: Decompose the delta vector in E:
+	// no transpose of R_EB, since the vector is in B
+	bce := reb.MulVec(bc)
+
+	// Step4: Find the position of C, using the functions that goes from one
+	// position and a delta, to a new position:
+	c, cDepth := FromDelta(b, bDepth, bce, opts...)
+
+	// When displaying the resulting position for humans, it is more convenient
+	// to see lat, long:
+	lat, lon := ToLatLon(c)
+
+	// Here we also assume that the user wants the output to be height (= -depth):
+	cHeight := -cDepth
+
+	fmt.Printf("Pos C: lat, long = %v, %v deg, height = %v m\n", Deg(lat), Deg(lon), cHeight)
+
+	// Output:
+	// Pos C: lat, long = 53.32637826433106, 63.468123435147454 deg, height = 406.00719606859053 m
 }
