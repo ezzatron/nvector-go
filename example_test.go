@@ -63,12 +63,12 @@ func Example_n01() {
 	// Step5: Also find the direction (azimuth) to B, relative to north:
 	az := math.Atan2(d.Y, d.X)
 
-	fmt.Printf("Delta north, east, down = %v, %v, %v m\n", d.X, d.Y, d.Z)
-	fmt.Printf("Azimuth = %v deg\n", Deg(az))
+	fmt.Printf("Delta north, east, down = %.8f, %.8f, %.8f m\n", d.X, d.Y, d.Z)
+	fmt.Printf("Azimuth = %.8f deg\n", Deg(az))
 
 	// Output:
-	// Delta north, east, down = 331730.23478089436, 332997.8749892695, 17404.271361936346 m
-	// Azimuth = 45.10926323826139 deg
+	// Delta north, east, down = 331730.23478089, 332997.87498927, 17404.27136194 m
+	// Azimuth = 45.10926324 deg
 }
 
 // Example 2: B and delta to C
@@ -119,8 +119,8 @@ func Example_n02() {
 	// Here we also assume that the user wants the output to be height (= -depth):
 	cHeight := -cDepth
 
-	fmt.Printf("Pos C: lat, long = %v, %v deg, height = %v m\n", Deg(lat), Deg(lon), cHeight)
+	fmt.Printf("Pos C: lat, long = %.8f, %.8f deg, height = %.8f m\n", Deg(lat), Deg(lon), cHeight)
 
 	// Output:
-	// Pos C: lat, long = 53.32637826433106, 63.468123435147454 deg, height = 406.00719606859053 m
+	// Pos C: lat, long = 53.32637826, 63.46812344 deg, height = 406.00719607 m
 }
