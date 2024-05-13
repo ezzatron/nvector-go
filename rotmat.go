@@ -70,3 +70,28 @@ func ToRotMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
 
 	return r
 }
+
+// WithWanderAzimuthToRotMat converts an n-vector and a wander azimuth angle to
+// a rotation matrix.
+//
+// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/n_E_and_wa2R_EL.m
+func WithWanderAzimuthToRotMat(
+	nv r3.Vec,
+	wa float64,
+	opts ...options.Option,
+) *r3.Mat {
+	o := options.New(opts)
+
+	// [latitude,longitude] = n_E2lat_long(n_E);
+	lat, lon := ToLatLon(nv, opts...)
+
+	// Longitude, -latitude, and wander azimuth are the x-y-z Euler angles (about
+	// new axes) for R_EL. See also the second paragraph of Section 5.2 in Gade
+	// (2010):
+
+	// CoordFrame selects correct E-axes
+	r := r3.NewMat(nil)
+	r.Mul(o.CoordFrame.T(), EulerXYZToRotMat(lon, -lat, wa))
+
+	return r
+}

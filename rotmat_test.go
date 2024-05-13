@@ -118,3 +118,79 @@ func Test_ToRotMat(t *testing.T) {
 		})
 	})
 }
+
+func Test_WithWanderAzimuthToRotMat(t *testing.T) {
+	client, err := testapi.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		client.Close()
+	})
+
+	ctx := context.Background()
+
+	t.Run("it matches the reference implementation", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			type inputs struct {
+				Opts []Option
+				Nv   r3.Vec
+				Wa   float64
+			}
+
+			i := rapid.Custom(func(t *rapid.T) inputs {
+				return inputs{
+					Opts: rapidgen.Options().Draw(t, "opts"),
+					Nv:   rapidgen.UnitVector().Draw(t, "nv"),
+					Wa:   rapidgen.Radians().Draw(t, "wa"),
+				}
+			}).Filter(func(i inputs) bool {
+				// Avoid situations where components of the xyz2R matrix are close
+				// to zero. The Python implementation rounds to zero in these cases,
+				// which produces very different results.
+				lat, lon := ToLatLon(i.Nv, i.Opts...)
+				r := EulerXYZToRotMat(lon, -lat, i.Wa)
+				for i := 0; i < 3; i++ {
+					for j := 0; j < 3; j++ {
+						n := r.At(i, j)
+						if n != 0 && n < 1e-15 && n > -1e-15 {
+							return false
+						}
+					}
+				}
+
+				return true
+			}).Draw(t, "inputs")
+
+			nv := i.Nv
+			wa := i.Wa
+			opts := i.Opts
+
+			want, err := client.WithWanderAzimuthToRotMat(ctx, nv, wa, opts...)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := WithWanderAzimuthToRotMat(nv, wa, opts...)
+
+			for i := 0; i < 3; i++ {
+				for j := 0; j < 3; j++ {
+					if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-14) {
+						t.Errorf(
+							"WithWanderAzimuthToRotMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
+							nv,
+							wa,
+							opts,
+							i,
+							j,
+							got.At(i, j),
+							i,
+							j,
+							want.At(i, j),
+						)
+					}
+				}
+			}
+		})
+	})
+}

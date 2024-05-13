@@ -14,7 +14,7 @@ func (c *Client) FromRotMat(ctx context.Context, r *r3.Mat) (r3.Vec, error) {
 	})
 }
 
-// ToRotMat converts n-vector to a rotation matrix.
+// ToRotMat converts an n-vector to a rotation matrix.
 func (c *Client) ToRotMat(
 	ctx context.Context,
 	nv r3.Vec,
@@ -25,5 +25,22 @@ func (c *Client) ToRotMat(
 	return call(ctx, c, unmarshalMatrix, "n_E2R_EN", map[string]any{
 		"n_E":  marshalVector(nv),
 		"R_Ee": marshalMatrix(o.CoordFrame),
+	})
+}
+
+// WithWanderAzimuthToRotMat converts an n-vector and a wander azimuth angle to
+// a rotation matrix.
+func (c *Client) WithWanderAzimuthToRotMat(
+	ctx context.Context,
+	nv r3.Vec,
+	wa float64,
+	opts ...options.Option,
+) (*r3.Mat, error) {
+	o := options.New(opts)
+
+	return call(ctx, c, unmarshalMatrix, "n_E_and_wa2R_EL", map[string]any{
+		"n_E":            marshalVector(nv),
+		"wander_azimuth": wa,
+		"R_Ee":           marshalMatrix(o.CoordFrame),
 	})
 }
