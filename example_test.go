@@ -277,3 +277,31 @@ func Example_n06() {
 	// Output:
 	// Interpolated position: lat, long = 89.91282200, 173.41322445 deg
 }
+
+// Example 7: Mean position/center
+//
+// Given three positions A, B, and C. Find the mean position (center/midpoint).
+//
+// See: https://www.ffi.no/en/research/n-vector/#example_7
+func Example_n07() {
+	// Three positions A, B and C are given:
+	// Enter elements directly:
+	// a := r3.Unit(r3.Vec{X: 1, Y: 0, Z: -2})
+	// b := r3.Unit(r3.Vec{X: -1, Y: -2, Z: 0})
+	// c := r3.Unit(r3.Vec{X: 0, Y: -2, Z: 3})
+
+	// or input as lat/long in degrees:
+	a := FromLatLon(Rad(90), Rad(0))
+	b := FromLatLon(Rad(60), Rad(10))
+	c := FromLatLon(Rad(50), Rad(-20))
+
+	// SOLUTION:
+
+	// Find the horizontal mean position, M:
+	m := r3.Unit(r3.Add(r3.Add(a, b), c))
+
+	fmt.Printf("Mean position: [%.8f, %.8f, %.8f]\n", m.X, m.Y, m.Z)
+
+	// Output:
+	// Mean position: [0.38411717, -0.04660241, 0.92210749]
+}
