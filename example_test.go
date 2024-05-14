@@ -359,11 +359,7 @@ func Example_n08() {
 	// to see lat, long:
 	lat, lon := ToLatLon(b)
 
-	fmt.Printf(
-		"Destination: lat, long = %.8f, %.8f deg\n",
-		Deg(lat),
-		Deg(lon),
-	)
+	fmt.Printf("Destination: lat, long = %.8f, %.8f deg\n", Deg(lat), Deg(lon))
 
 	// Output:
 	// Destination: lat, long = 79.99154867, -90.01769837 deg
@@ -403,11 +399,7 @@ func Example_n09() {
 	// to see lat, long:
 	lat, lon := ToLatLon(c)
 
-	fmt.Printf(
-		"Intersection: lat, long = %.8f, %.8f deg\n",
-		Deg(lat),
-		Deg(lon),
-	)
+	fmt.Printf("Intersection: lat, long = %.8f, %.8f deg\n", Deg(lat), Deg(lon))
 
 	// Output:
 	// Intersection: lat, long = 74.16344802, 180.00000000 deg
