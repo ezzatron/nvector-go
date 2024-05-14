@@ -3,11 +3,11 @@ package ellipsoid_test
 import (
 	"testing"
 
-	"github.com/ezzatron/nvector-go/ellipsoid"
+	. "github.com/ezzatron/nvector-go/ellipsoid"
 )
 
 func Test_GRS80(t *testing.T) {
-	e := ellipsoid.GRS80()
+	e := GRS80()
 
 	if e.SemiMajorAxis != 6378137.0 {
 		t.Errorf("Expected SemiMajorAxis to be 6378137.0, got %f", e.SemiMajorAxis)
@@ -18,7 +18,7 @@ func Test_GRS80(t *testing.T) {
 }
 
 func Test_WGS72(t *testing.T) {
-	e := ellipsoid.WGS72()
+	e := WGS72()
 
 	if e.SemiMajorAxis != 6378135.0 {
 		t.Errorf("Expected SemiMajorAxis to be 6378135.0, got %f", e.SemiMajorAxis)
@@ -29,7 +29,7 @@ func Test_WGS72(t *testing.T) {
 }
 
 func Test_WGS84(t *testing.T) {
-	e := ellipsoid.WGS84()
+	e := WGS84()
 
 	if e.SemiMajorAxis != 6378137.0 {
 		t.Errorf("Expected SemiMajorAxis to be 6378137.0, got %f", e.SemiMajorAxis)
@@ -40,7 +40,7 @@ func Test_WGS84(t *testing.T) {
 }
 
 func Test_WGS84Sphere(t *testing.T) {
-	e := ellipsoid.WGS84Sphere()
+	e := WGS84Sphere()
 
 	if e.SemiMajorAxis != 6378137.0 {
 		t.Errorf("Expected SemiMajorAxis to be 6378137.0, got %f", e.SemiMajorAxis)
