@@ -13,10 +13,10 @@ var eps = math.Nextafter(1, 2) - 1
 // singularity.
 var nSingularityEps = 10.0
 
-// EulerXYZToRotMat converts Euler angles in XYZ order to a rotation matrix.
+// XYZToRotationMat converts Euler angles in XYZ order to a rotation matrix.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/xyz2R.m
-func EulerXYZToRotMat(x, y, z float64) *r3.Mat {
+func XYZToRotationMat(x, y, z float64) *r3.Mat {
 	cz := math.Cos(z)
 	sz := math.Sin(z)
 	cy := math.Cos(y)
@@ -31,10 +31,10 @@ func EulerXYZToRotMat(x, y, z float64) *r3.Mat {
 	})
 }
 
-// EulerZYXToRotMat converts Euler angles in ZYX order to a rotation matrix.
+// ZYXToRotationMat converts Euler angles in ZYX order to a rotation matrix.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/zyx2R.m
-func EulerZYXToRotMat(z, y, x float64) *r3.Mat {
+func ZYXToRotationMat(z, y, x float64) *r3.Mat {
 	cz := math.Cos(z)
 	sz := math.Sin(z)
 	cy := math.Cos(y)
@@ -49,10 +49,10 @@ func EulerZYXToRotMat(z, y, x float64) *r3.Mat {
 	})
 }
 
-// RotMatToEulerXYZ converts a rotation matrix to Euler angles in XYZ order.
+// RotationMatToXYZ converts a rotation matrix to Euler angles in XYZ order.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R2xyz.m
-func RotMatToEulerXYZ(r *r3.Mat) (x, y, z float64) {
+func RotationMatToXYZ(r *r3.Mat) (x, y, z float64) {
 	// cy is based on as many elements as possible, to average out numerical
 	// errors. It is selected as the positive square root since y: [-pi/2 pi/2]
 	cy := math.Sqrt((math.Pow(r.At(0, 0), 2) +
@@ -87,10 +87,10 @@ func RotMatToEulerXYZ(r *r3.Mat) (x, y, z float64) {
 	return x, y, z
 }
 
-// RotMatToEulerZYX converts a rotation matrix to Euler angles in ZYX order.
+// RotationMatToZYX converts a rotation matrix to Euler angles in ZYX order.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R2zyx.m
-func RotMatToEulerZYX(r *r3.Mat) (z, y, x float64) {
+func RotationMatToZYX(r *r3.Mat) (z, y, x float64) {
 	// cy is based on as many elements as possible, to average out numerical
 	// errors. It is selected as the positive square root since y: [-pi/2 pi/2]
 	cy := math.Sqrt((math.Pow(r.At(0, 0), 2) +

@@ -14,7 +14,7 @@ func Options() *rapid.Generator[[]options.Option] {
 		if rapid.Bool().Draw(t, "hasCoordFrame") {
 			opts = append(
 				opts,
-				nvector.WithCoordFrame(RotationMatrix().Draw(t, "coordFrame")),
+				nvector.WithCoordFrame(RotationMat().Draw(t, "coordFrame")),
 			)
 		}
 

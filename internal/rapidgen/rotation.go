@@ -31,8 +31,8 @@ func Quaternion() *rapid.Generator[quat.Number] {
 	})
 }
 
-// RotationMatrix creates a rapid generator for rotation matrices.
-func RotationMatrix() *rapid.Generator[*r3.Mat] {
+// RotationMat creates a rapid generator for rotation matrices.
+func RotationMat() *rapid.Generator[*r3.Mat] {
 	return rapid.Custom(func(t *rapid.T) *r3.Mat {
 		// based on https://github.com/rawify/Quaternion.js/blob/c3834673b502e64e1866dbbf13568c0be93e52cc/q.js#L791
 		q := Quaternion().Draw(t, "quaternion")

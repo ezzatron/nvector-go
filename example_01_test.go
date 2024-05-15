@@ -47,7 +47,7 @@ func Example_n01AAndBToDelta() {
 	de := nvector.Delta(a, aDepth, b, bDepth)
 
 	// Step3: Find R_EN for position A:
-	r := nvector.ToRotMat(a)
+	r := nvector.ToRotationMat(a)
 
 	// Step4: Find p_AB_N
 	d := r.MulVecTrans(de)

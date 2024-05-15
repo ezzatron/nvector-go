@@ -7,17 +7,17 @@ import (
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
-// FromRotMat converts a rotation matrix to an n-vector.
+// FromRotationMat converts a rotation matrix to an n-vector.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R_EN2n_E.m
-func FromRotMat(r *r3.Mat) r3.Vec {
+func FromRotationMat(r *r3.Mat) r3.Vec {
 	return r.MulVec(r3.Vec{X: 0, Y: 0, Z: -1})
 }
 
-// ToRotMat converts n-vector to a rotation matrix.
+// ToRotationMat converts n-vector to a rotation matrix.
 //
 // See: https://github.com/FFI-no/n-vector/blob/82d749a67cc9f332f48c51aa969cdc277b4199f2/nvector/n_E2R_EN.m
-func ToRotMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
+func ToRotationMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
 	o := options.New(opts)
 
 	// CoordFrame selects correct E-axes
@@ -71,11 +71,11 @@ func ToRotMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
 	return r
 }
 
-// WithWanderAzimuthToRotMat converts an n-vector and a wander azimuth angle to
-// a rotation matrix.
+// ToRotationMatUsingWanderAzimuth converts an n-vector and a wander azimuth
+// angle to a rotation matrix.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/n_E_and_wa2R_EL.m
-func WithWanderAzimuthToRotMat(
+func ToRotationMatUsingWanderAzimuth(
 	nv r3.Vec,
 	wa float64,
 	opts ...options.Option,
@@ -91,7 +91,7 @@ func WithWanderAzimuthToRotMat(
 
 	// CoordFrame selects correct E-axes
 	r := r3.NewMat(nil)
-	r.Mul(o.CoordFrame.T(), EulerXYZToRotMat(lon, -lat, wa))
+	r.Mul(o.CoordFrame.T(), XYZToRotationMat(lon, -lat, wa))
 
 	return r
 }

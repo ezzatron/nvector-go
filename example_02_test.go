@@ -23,7 +23,7 @@ func Example_n02BAndDeltaToC() {
 	b := r3.Unit(r3.Vec{X: 1, Y: 2, Z: 3})
 	bDepth := -400.0
 	// the three angles are yaw, pitch, and roll
-	r := nvector.EulerZYXToRotMat(
+	r := nvector.ZYXToRotationMat(
 		nvector.Rad(10),
 		nvector.Rad(20),
 		nvector.Rad(30),
@@ -38,7 +38,7 @@ func Example_n02BAndDeltaToC() {
 	// SOLUTION:
 
 	// Step1: Find R_EN:
-	rb := nvector.ToRotMat(b)
+	rb := nvector.ToRotationMat(b)
 
 	// Step2: Find R_EB, from R_EN and R_NB:
 	// Note: closest frames cancel

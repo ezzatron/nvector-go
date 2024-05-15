@@ -14,7 +14,7 @@ import (
 	"pgregory.net/rapid"
 )
 
-func Test_FromRotMat(t *testing.T) {
+func Test_FromRotationMat(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -27,29 +27,29 @@ func Test_FromRotMat(t *testing.T) {
 
 	t.Run("it matches the reference implementation", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			r := rapidgen.RotationMatrix().Draw(t, "r")
+			r := rapidgen.RotationMat().Draw(t, "r")
 
-			want, err := client.FromRotMat(ctx, r)
+			want, err := client.FromRotationMat(ctx, r)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := FromRotMat(r)
+			got := FromRotationMat(r)
 
 			if !scalar.EqualWithinAbs(got.X, want.X, 1e-15) {
-				t.Errorf("FromRotMat(%v) = X: %v; want X: %v", r, got.X, want.X)
+				t.Errorf("FromRotationMat(%v) = X: %v; want X: %v", r, got.X, want.X)
 			}
 			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-15) {
-				t.Errorf("FromRotMat(%v) = Y: %v; want Y: %v", r, got.Y, want.Y)
+				t.Errorf("FromRotationMat(%v) = Y: %v; want Y: %v", r, got.Y, want.Y)
 			}
 			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-15) {
-				t.Errorf("FromRotMat(%v) = Z: %v; want Z: %v", r, got.Z, want.Z)
+				t.Errorf("FromRotationMat(%v) = Z: %v; want Z: %v", r, got.Z, want.Z)
 			}
 		})
 	})
 }
 
-func Test_ToRotMat(t *testing.T) {
+func Test_ToRotationMat(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -91,18 +91,18 @@ func Test_ToRotMat(t *testing.T) {
 			nv := i.Nv
 			opts := i.Opts
 
-			want, err := client.ToRotMat(ctx, nv, opts...)
+			want, err := client.ToRotationMat(ctx, nv, opts...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := ToRotMat(nv, opts...)
+			got := ToRotationMat(nv, opts...)
 
 			for i := 0; i < 3; i++ {
 				for j := 0; j < 3; j++ {
 					if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-14) {
 						t.Errorf(
-							"ToRotMat(%v, %v) = %v,%v: %v; want %v,%v: %v",
+							"ToRotationMat(%v, %v) = %v,%v: %v; want %v,%v: %v",
 							nv,
 							opts,
 							i,
@@ -125,13 +125,13 @@ func Test_ToRotMat(t *testing.T) {
 			0, 1, -0,
 			0, 0, -1,
 		})
-		got := ToRotMat(nv)
+		got := ToRotationMat(nv)
 
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
 				if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-14) {
 					t.Errorf(
-						"ToRotMat(%v) = %v,%v: %v; want %v,%v: %v",
+						"ToRotationMat(%v) = %v,%v: %v; want %v,%v: %v",
 						nv,
 						i,
 						j,
@@ -146,7 +146,7 @@ func Test_ToRotMat(t *testing.T) {
 	})
 }
 
-func Test_WithWanderAzimuthToRotMat(t *testing.T) {
+func Test_ToRotationMatUsingWanderAzimuth(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -176,7 +176,7 @@ func Test_WithWanderAzimuthToRotMat(t *testing.T) {
 				// to zero. The Python implementation rounds to zero in these cases,
 				// which produces very different results.
 				lat, lon := ToLatLon(i.Nv, i.Opts...)
-				r := EulerXYZToRotMat(lon, -lat, i.Wa)
+				r := XYZToRotationMat(lon, -lat, i.Wa)
 				for i := 0; i < 3; i++ {
 					for j := 0; j < 3; j++ {
 						n := r.At(i, j)
@@ -193,18 +193,18 @@ func Test_WithWanderAzimuthToRotMat(t *testing.T) {
 			wa := i.Wa
 			opts := i.Opts
 
-			want, err := client.WithWanderAzimuthToRotMat(ctx, nv, wa, opts...)
+			want, err := client.ToRotationMatUsingWanderAzimuth(ctx, nv, wa, opts...)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := WithWanderAzimuthToRotMat(nv, wa, opts...)
+			got := ToRotationMatUsingWanderAzimuth(nv, wa, opts...)
 
 			for i := 0; i < 3; i++ {
 				for j := 0; j < 3; j++ {
 					if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-14) {
 						t.Errorf(
-							"WithWanderAzimuthToRotMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
+							"ToRotationMatUsingWanderAzimuth(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
 							nv,
 							wa,
 							opts,

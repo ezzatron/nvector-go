@@ -14,7 +14,7 @@ import (
 	"pgregory.net/rapid"
 )
 
-func Test_EulerXYZToRotMat(t *testing.T) {
+func Test_XYZToRotationMat(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -31,18 +31,18 @@ func Test_EulerXYZToRotMat(t *testing.T) {
 			y := rapidgen.Radians().Draw(t, "y")
 			z := rapidgen.Radians().Draw(t, "z")
 
-			want, err := client.EulerXYZToRotMat(ctx, x, y, z)
+			want, err := client.XYZToRotationMat(ctx, x, y, z)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := EulerXYZToRotMat(x, y, z)
+			got := XYZToRotationMat(x, y, z)
 
 			for i := 0; i < 3; i++ {
 				for j := 0; j < 3; j++ {
 					if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-15) {
 						t.Errorf(
-							"EulerXYZToRotMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
+							"XYZToRotationMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
 							x,
 							y,
 							z,
@@ -60,7 +60,7 @@ func Test_EulerXYZToRotMat(t *testing.T) {
 	})
 }
 
-func Test_EulerZYXToRotMat(t *testing.T) {
+func Test_ZYXToRotationMat(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -77,18 +77,18 @@ func Test_EulerZYXToRotMat(t *testing.T) {
 			y := rapidgen.Radians().Draw(t, "y")
 			x := rapidgen.Radians().Draw(t, "x")
 
-			want, err := client.EulerZYXToRotMat(ctx, z, y, x)
+			want, err := client.ZYXToRotationMat(ctx, z, y, x)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := EulerZYXToRotMat(z, y, x)
+			got := ZYXToRotationMat(z, y, x)
 
 			for i := 0; i < 3; i++ {
 				for j := 0; j < 3; j++ {
 					if !scalar.EqualWithinAbs(got.At(i, j), want.At(i, j), 1e-15) {
 						t.Errorf(
-							"EulerZYXToRotMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
+							"ZYXToRotationMat(%v, %v, %v) = %v,%v: %v; want %v,%v: %v",
 							z,
 							y,
 							x,
@@ -106,7 +106,7 @@ func Test_EulerZYXToRotMat(t *testing.T) {
 	})
 }
 
-func Test_RotMatToEulerXYZ(t *testing.T) {
+func Test_RotationMatToXYZ(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -119,23 +119,23 @@ func Test_RotMatToEulerXYZ(t *testing.T) {
 
 	t.Run("it matches the reference implementation", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			r := rapidgen.RotationMatrix().Draw(t, "r")
+			r := rapidgen.RotationMat().Draw(t, "r")
 
-			wantX, wantY, wantZ, err := client.RotMatToEulerXYZ(ctx, r)
+			wantX, wantY, wantZ, err := client.RotationMatToXYZ(ctx, r)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			gotX, gotY, gotZ := RotMatToEulerXYZ(r)
+			gotX, gotY, gotZ := RotationMatToXYZ(r)
 
 			if !equality.EqualToRadians(gotX, wantX, 1e-15) {
-				t.Errorf("RotMatToEulerXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
+				t.Errorf("RotationMatToXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
 			}
 			if !equality.EqualToRadians(gotY, wantY, 1e-15) {
-				t.Errorf("RotMatToEulerXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+				t.Errorf("RotationMatToXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
 			}
 			if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
-				t.Errorf("RotMatToEulerXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+				t.Errorf("RotationMatToXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
 			}
 		})
 	})
@@ -148,21 +148,21 @@ func Test_RotMatToEulerXYZ(t *testing.T) {
 		})
 
 		wantX, wantY, wantZ := 0.0, math.Pi/2, 0.0
-		gotX, gotY, gotZ := RotMatToEulerXYZ(r)
+		gotX, gotY, gotZ := RotationMatToXYZ(r)
 
 		if !equality.EqualToRadians(gotX, wantX, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
+			t.Errorf("RotationMatToXYZ(%v) = X: %v; want X: %v", r, gotX, wantX)
 		}
 		if !equality.EqualToRadians(gotY, wantY, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+			t.Errorf("RotationMatToXYZ(%v) = Y: %v; want Y: %v", r, gotY, wantY)
 		}
 		if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
-			t.Errorf("RotMatToEulerXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+			t.Errorf("RotationMatToXYZ(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
 		}
 	})
 }
 
-func Test_RotMatToEulerZYX(t *testing.T) {
+func Test_RotationMatToZYX(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -175,23 +175,23 @@ func Test_RotMatToEulerZYX(t *testing.T) {
 
 	t.Run("it matches the reference implementation", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			r := rapidgen.RotationMatrix().Draw(t, "r")
+			r := rapidgen.RotationMat().Draw(t, "r")
 
-			wantZ, wantY, wantX, err := client.RotMatToEulerZYX(ctx, r)
+			wantZ, wantY, wantX, err := client.RotationMatToZYX(ctx, r)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			gotZ, gotY, gotX := RotMatToEulerZYX(r)
+			gotZ, gotY, gotX := RotationMatToZYX(r)
 
 			if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
-				t.Errorf("RotMatToEulerZYX(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+				t.Errorf("RotationMatToZYX(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
 			}
 			if !equality.EqualToRadians(gotY, wantY, 1e-15) {
-				t.Errorf("RotMatToEulerZYX(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+				t.Errorf("RotationMatToZYX(%v) = Y: %v; want Y: %v", r, gotY, wantY)
 			}
 			if !equality.EqualToRadians(gotX, wantX, 1e-15) {
-				t.Errorf("RotMatToEulerZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
+				t.Errorf("RotationMatToZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
 			}
 		})
 	})
@@ -204,16 +204,16 @@ func Test_RotMatToEulerZYX(t *testing.T) {
 		})
 
 		wantX, wantY, wantZ := -0.0, math.Pi/2, 0.0
-		gotX, gotY, gotZ := RotMatToEulerZYX(r)
+		gotX, gotY, gotZ := RotationMatToZYX(r)
 
 		if !equality.EqualToRadians(gotX, wantX, 1e-15) {
-			t.Errorf("RotMatToEulerZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
+			t.Errorf("RotationMatToZYX(%v) = X: %v; want X: %v", r, gotX, wantX)
 		}
 		if !equality.EqualToRadians(gotY, wantY, 1e-15) {
-			t.Errorf("RotMatToEulerZYX(%v) = Y: %v; want Y: %v", r, gotY, wantY)
+			t.Errorf("RotationMatToZYX(%v) = Y: %v; want Y: %v", r, gotY, wantY)
 		}
 		if !equality.EqualToRadians(gotZ, wantZ, 1e-15) {
-			t.Errorf("RotMatToEulerZYX(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
+			t.Errorf("RotationMatToZYX(%v) = Z: %v; want Z: %v", r, gotZ, wantZ)
 		}
 	})
 }

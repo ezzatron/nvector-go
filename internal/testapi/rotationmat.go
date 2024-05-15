@@ -7,15 +7,15 @@ import (
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
-// FromRotMat converts a rotation matrix to an n-vector.
-func (c *Client) FromRotMat(ctx context.Context, r *r3.Mat) (r3.Vec, error) {
+// FromRotationMat converts a rotation matrix to an n-vector.
+func (c *Client) FromRotationMat(ctx context.Context, r *r3.Mat) (r3.Vec, error) {
 	return call(ctx, c, unmarshalVector, "R_EN2n_E", map[string]any{
 		"R_EN": marshalMatrix(r),
 	})
 }
 
-// ToRotMat converts an n-vector to a rotation matrix.
-func (c *Client) ToRotMat(
+// ToRotationMat converts an n-vector to a rotation matrix.
+func (c *Client) ToRotationMat(
 	ctx context.Context,
 	nv r3.Vec,
 	opts ...options.Option,
@@ -28,9 +28,9 @@ func (c *Client) ToRotMat(
 	})
 }
 
-// WithWanderAzimuthToRotMat converts an n-vector and a wander azimuth angle to
-// a rotation matrix.
-func (c *Client) WithWanderAzimuthToRotMat(
+// ToRotationMatUsingWanderAzimuth converts an n-vector and a wander azimuth
+// angle to a rotation matrix.
+func (c *Client) ToRotationMatUsingWanderAzimuth(
 	ctx context.Context,
 	nv r3.Vec,
 	wa float64,
