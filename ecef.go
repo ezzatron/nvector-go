@@ -7,7 +7,7 @@ import (
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
-// FromECEF converts an ECEF vector to an n-vector and depth.
+// FromECEF converts an ECEF position vector to an n-vector and depth.
 //
 // The depth is returned in meters below the ellipsoid surface.
 //
@@ -56,7 +56,7 @@ func FromECEF(ecef r3.Vec, opts ...Option) (r3.Vec, float64) {
 	return r3.Unit(o.CoordFrame.MulVecTrans(nv)), -height
 }
 
-// ToECEF converts an n-vector and depth to an ECEF vector.
+// ToECEF converts an n-vector and depth to an ECEF position vector.
 //
 // d is given in meters below the ellipsoid surface.
 //

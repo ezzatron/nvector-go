@@ -7,7 +7,7 @@ import (
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
-// FromECEF converts an ECEF vector to an n-vector and depth.
+// FromECEF converts an ECEF position vector to an n-vector and depth.
 func (c *Client) FromECEF(
 	ctx context.Context,
 	ecef r3.Vec,
@@ -33,7 +33,7 @@ func (c *Client) FromECEF(
 	return unmarshalVector(data.Nv), data.D, nil
 }
 
-// ToECEF converts an n-vector and depth to an ECEF vector.
+// ToECEF converts an n-vector and depth to an ECEF position vector.
 func (c *Client) ToECEF(
 	ctx context.Context,
 	nv r3.Vec,

@@ -44,7 +44,7 @@ func Example_n01AAndBToDelta() {
 	b := nvector.FromLatLon(nvector.Rad(bLat), nvector.Rad(bLon))
 
 	// Step2: Find p_AB_E (delta decomposed in E). WGS-84 ellipsoid is default:
-	de := nvector.ToDelta(a, aDepth, b, bDepth)
+	de := nvector.Delta(a, aDepth, b, bDepth)
 
 	// Step3: Find R_EN for position A:
 	r := nvector.ToRotMat(a)

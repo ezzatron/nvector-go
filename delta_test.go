@@ -14,7 +14,79 @@ import (
 	"pgregory.net/rapid"
 )
 
-func Test_FromDelta(t *testing.T) {
+func Test_Delta(t *testing.T) {
+	client, err := testapi.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		client.Close()
+	})
+
+	ctx := context.Background()
+
+	t.Run("it matches the reference implementation", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			opts := rapidgen.Options().Draw(t, "opts")
+			o := options.New(opts)
+
+			from := rapidgen.UnitVector().Draw(t, "from")
+			fromDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "fromDepth")
+			to := rapidgen.UnitVector().Draw(t, "to")
+			toDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "toDepth")
+
+			want, err := client.Delta(
+				ctx,
+				from,
+				fromDepth,
+				to,
+				toDepth,
+				opts...,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := Delta(from, fromDepth, to, toDepth, opts...)
+
+			if !scalar.EqualWithinAbs(got.X, want.X, 1e-7) {
+				t.Errorf(
+					"Delta(%v, %v, %v, %v) = X: %v; want X: %v",
+					from,
+					fromDepth,
+					to,
+					toDepth,
+					got.X,
+					want.X,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-7) {
+				t.Errorf(
+					"Delta(%v, %v, %v, %v) = Y: %v; want Y: %v",
+					from,
+					fromDepth,
+					to,
+					toDepth,
+					got.Y,
+					want.Y,
+				)
+			}
+			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-7) {
+				t.Errorf(
+					"Delta(%v, %v, %v, %v) = Z: %v; want Z: %v",
+					from,
+					fromDepth,
+					to,
+					toDepth,
+					got.Z,
+					want.Z,
+				)
+			}
+		})
+	})
+}
+
+func Test_Destination(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -80,7 +152,7 @@ func Test_FromDelta(t *testing.T) {
 			delta := i.Delta
 			opts := i.Opts
 
-			wantNv, wantD, err := client.FromDelta(
+			wantNv, wantD, err := client.Destination(
 				ctx,
 				from,
 				fromDepth,
@@ -91,11 +163,11 @@ func Test_FromDelta(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			gotNv, gotD := FromDelta(from, fromDepth, delta, opts...)
+			gotNv, gotD := Destination(from, fromDepth, delta, opts...)
 
 			if !scalar.EqualWithinAbs(gotNv.X, wantNv.X, 1e-12) {
 				t.Errorf(
-					"FromDelta(%v, %v, %v) = X: %v; want X: %v",
+					"Destination(%v, %v, %v) = X: %v; want X: %v",
 					from,
 					fromDepth,
 					delta,
@@ -105,7 +177,7 @@ func Test_FromDelta(t *testing.T) {
 			}
 			if !scalar.EqualWithinAbs(gotNv.Y, wantNv.Y, 1e-12) {
 				t.Errorf(
-					"FromDelta(%v, %v, %v) = Y: %v; want Y: %v",
+					"Destination(%v, %v, %v) = Y: %v; want Y: %v",
 					from,
 					fromDepth,
 					delta,
@@ -115,7 +187,7 @@ func Test_FromDelta(t *testing.T) {
 			}
 			if !scalar.EqualWithinAbs(gotNv.Z, wantNv.Z, 1e-12) {
 				t.Errorf(
-					"FromDelta(%v, %v, %v) = Z: %v; want Z: %v",
+					"Destination(%v, %v, %v) = Z: %v; want Z: %v",
 					from,
 					fromDepth,
 					delta,
@@ -125,84 +197,12 @@ func Test_FromDelta(t *testing.T) {
 			}
 			if !scalar.EqualWithinAbs(gotD, wantD, 1e-8) {
 				t.Errorf(
-					"FromDelta(%v, %v, %v) = D: %v; want D: %v",
+					"Destination(%v, %v, %v) = D: %v; want D: %v",
 					from,
 					fromDepth,
 					delta,
 					gotD,
 					wantD,
-				)
-			}
-		})
-	})
-}
-
-func Test_ToDelta(t *testing.T) {
-	client, err := testapi.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		client.Close()
-	})
-
-	ctx := context.Background()
-
-	t.Run("it matches the reference implementation", func(t *testing.T) {
-		rapid.Check(t, func(t *rapid.T) {
-			opts := rapidgen.Options().Draw(t, "opts")
-			o := options.New(opts)
-
-			from := rapidgen.UnitVector().Draw(t, "from")
-			fromDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "fromDepth")
-			to := rapidgen.UnitVector().Draw(t, "to")
-			toDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "toDepth")
-
-			want, err := client.ToDelta(
-				ctx,
-				from,
-				fromDepth,
-				to,
-				toDepth,
-				opts...,
-			)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got := ToDelta(from, fromDepth, to, toDepth, opts...)
-
-			if !scalar.EqualWithinAbs(got.X, want.X, 1e-7) {
-				t.Errorf(
-					"ToDelta(%v, %v, %v, %v) = X: %v; want X: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.X,
-					want.X,
-				)
-			}
-			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-7) {
-				t.Errorf(
-					"ToDelta(%v, %v, %v, %v) = Y: %v; want Y: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.Y,
-					want.Y,
-				)
-			}
-			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-7) {
-				t.Errorf(
-					"ToDelta(%v, %v, %v, %v) = Z: %v; want Z: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.Z,
-					want.Z,
 				)
 			}
 		})

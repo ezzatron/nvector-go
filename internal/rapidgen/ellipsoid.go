@@ -14,7 +14,7 @@ func Depth(e options.Ellipsoid) *rapid.Generator[float64] {
 	return rapid.Float64Range(-b, b)
 }
 
-// EcefVector creates a rapid generator for ECEF vectors relative to an
+// EcefVector creates a rapid generator for ECEF position vectors relative to an
 // ellipsoid.
 func EcefVector(e options.Ellipsoid) *rapid.Generator[r3.Vec] {
 	// Semi-minor axis

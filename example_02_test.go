@@ -51,7 +51,7 @@ func Example_n02BAndDeltaToC() {
 
 	// Step4: Find the position of C, using the functions that goes from one
 	// position and a delta, to a new position:
-	c, cDepth := nvector.FromDelta(b, bDepth, bce, opts...)
+	c, cDepth := nvector.Destination(b, bDepth, bce, opts...)
 
 	// When displaying the resulting position for humans, it is more convenient
 	// to see lat, long:
