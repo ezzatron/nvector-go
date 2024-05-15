@@ -10,15 +10,15 @@ import (
 type Option = options.Option
 
 // WithEllipsoid sets the ellipsoid option.
-func WithEllipsoid(Ellipsoid ellipsoid.Ellipsoid) Option {
+func WithEllipsoid(e ellipsoid.Ellipsoid) Option {
 	return func(o *options.Options) {
-		o.Ellipsoid = Ellipsoid
+		o.Ellipsoid = e
 	}
 }
 
 // WithCoordFrame sets the coordinate frame option.
-func WithCoordFrame(CoordFrame *r3.Mat) Option {
+func WithCoordFrame(f *r3.Mat) Option {
 	return func(o *options.Options) {
-		o.CoordFrame = CoordFrame
+		o.CoordFrame = f
 	}
 }
