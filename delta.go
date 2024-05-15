@@ -1,7 +1,6 @@
 package nvector
 
 import (
-	"github.com/ezzatron/nvector-go/internal/options"
 	"gonum.org/v1/gonum/spatial/r3"
 )
 
@@ -16,7 +15,7 @@ func Delta(
 	fromDepth float64,
 	to r3.Vec,
 	toDepth float64,
-	opts ...options.Option,
+	opts ...Option,
 ) r3.Vec {
 	// Function 1. in Section 5.4 in Gade (2010):
 	return r3.Sub(ToECEF(to, toDepth, opts...), ToECEF(from, fromDepth, opts...))
@@ -32,7 +31,7 @@ func Destination(
 	from r3.Vec,
 	fromDepth float64,
 	delta r3.Vec,
-	opts ...options.Option,
+	opts ...Option,
 ) (to r3.Vec, toDepth float64) {
 	// Function 2. in Section 5.4 in Gade (2010):
 	return FromECEF(r3.Add(ToECEF(from, fromDepth, opts...), delta), opts...)

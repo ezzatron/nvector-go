@@ -17,7 +17,7 @@ func FromRotationMat(r *r3.Mat) r3.Vec {
 // ToRotationMat converts n-vector to a rotation matrix.
 //
 // See: https://github.com/FFI-no/n-vector/blob/82d749a67cc9f332f48c51aa969cdc277b4199f2/nvector/n_E2R_EN.m
-func ToRotationMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
+func ToRotationMat(nv r3.Vec, opts ...Option) *r3.Mat {
 	o := options.New(opts)
 
 	// CoordFrame selects correct E-axes
@@ -78,7 +78,7 @@ func ToRotationMat(nv r3.Vec, opts ...options.Option) *r3.Mat {
 func ToRotationMatUsingWanderAzimuth(
 	nv r3.Vec,
 	wa float64,
-	opts ...options.Option,
+	opts ...Option,
 ) *r3.Mat {
 	o := options.New(opts)
 
