@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 3: ECEF-vector to geodetic latitude
@@ -15,24 +14,24 @@ import (
 // See: https://www.ffi.no/en/research/n-vector/#example_3
 func Example_n03ECEFToLatLon() {
 	// Position B is given as p_EB_E ("ECEF-vector")
-	pb := r3.Scale(6371e3, r3.Vec{X: 0.71, Y: -0.72, Z: 0.1}) // m
+	b := nvector.Vector{X: 0.71, Y: -0.72, Z: 0.1}.Scale(6371e3) // m
 
 	// Find position B as geodetic latitude, longitude and height
 
 	// SOLUTION:
 
 	// Find n-vector from the p-vector:
-	nvb, db := nvector.FromECEF(pb)
+	vb := nvector.FromECEF(b, nvector.WGS84, nvector.ZAxisNorth)
 
 	// Convert to lat, long and height:
-	lat, lon := nvector.ToLatLon(nvb)
-	hb := -db
+	gc := nvector.ToGeodeticCoordinates(vb.Vector, nvector.ZAxisNorth)
+	h := -vb.Depth
 
 	fmt.Printf(
 		"Pos B: lat, long = %.8f, %.8f deg, height = %.8f m\n",
-		nvector.Deg(lat),
-		nvector.Deg(lon),
-		hb,
+		nvector.Degrees(gc.Latitude),
+		nvector.Degrees(gc.Longitude),
+		h,
 	)
 
 	// Output:

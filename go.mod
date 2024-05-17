@@ -4,7 +4,6 @@ go 1.22.2
 
 require (
 	github.com/gorilla/websocket v1.5.1
-	gonum.org/v1/gonum v0.15.0
 	pgregory.net/rapid v1.1.0
 )
 

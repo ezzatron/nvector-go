@@ -1,18 +1,18 @@
 package testapi
 
 import (
-	"gonum.org/v1/gonum/spatial/r3"
+	"github.com/ezzatron/nvector-go"
 )
 
-func marshalMatrix(m *r3.Mat) [][]float64 {
+func marshalMatrix(m nvector.Matrix) [][]float64 {
 	return [][]float64{
-		{m.At(0, 0), m.At(0, 1), m.At(0, 2)},
-		{m.At(1, 0), m.At(1, 1), m.At(1, 2)},
-		{m.At(2, 0), m.At(2, 1), m.At(2, 2)},
+		{m.XX, m.XY, m.XZ},
+		{m.YX, m.YY, m.YZ},
+		{m.ZX, m.ZY, m.ZZ},
 	}
 }
 
-func marshalVector(v r3.Vec) [][]float64 {
+func marshalVector(v nvector.Vector) [][]float64 {
 	return [][]float64{{v.X}, {v.Y}, {v.Z}}
 }
 
@@ -20,14 +20,14 @@ func unmarshalAs[J any](data J) J {
 	return data
 }
 
-func unmarshalMatrix(data [][]float64) *r3.Mat {
-	return r3.NewMat([]float64{
-		data[0][0], data[0][1], data[0][2],
-		data[1][0], data[1][1], data[1][2],
-		data[2][0], data[2][1], data[2][2],
-	})
+func unmarshalMatrix(data [][]float64) nvector.Matrix {
+	return nvector.Matrix{
+		XX: data[0][0], XY: data[0][1], XZ: data[0][2],
+		YX: data[1][0], YY: data[1][1], YZ: data[1][2],
+		ZX: data[2][0], ZY: data[2][1], ZZ: data[2][2],
+	}
 }
 
-func unmarshalVector(data [][]float64) r3.Vec {
-	return r3.Vec{X: data[0][0], Y: data[1][0], Z: data[2][0]}
+func unmarshalVector(data [][]float64) nvector.Vector {
+	return nvector.Vector{X: data[0][0], Y: data[1][0], Z: data[2][0]}
 }

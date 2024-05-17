@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 7: Mean position/center
@@ -15,19 +14,37 @@ import (
 func Example_n07MeanPosition() {
 	// Three positions A, B and C are given:
 	// Enter elements directly:
-	// a := r3.Unit(r3.Vec{X: 1, Y: 0, Z: -2})
-	// b := r3.Unit(r3.Vec{X: -1, Y: -2, Z: 0})
-	// c := r3.Unit(r3.Vec{X: 0, Y: -2, Z: 3})
+	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
+	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
+	// c := nvector.Vector{X: 0, Y: -2, Z: 3}.Normalize()
 
 	// or input as lat/long in degrees:
-	a := nvector.FromLatLon(nvector.Rad(90), nvector.Rad(0))
-	b := nvector.FromLatLon(nvector.Rad(60), nvector.Rad(10))
-	c := nvector.FromLatLon(nvector.Rad(50), nvector.Rad(-20))
+	a := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(90),
+			Longitude: nvector.Radians(0),
+		},
+		nvector.ZAxisNorth,
+	)
+	b := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(60),
+			Longitude: nvector.Radians(10),
+		},
+		nvector.ZAxisNorth,
+	)
+	c := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(50),
+			Longitude: nvector.Radians(-20),
+		},
+		nvector.ZAxisNorth,
+	)
 
 	// SOLUTION:
 
 	// Find the horizontal mean position, M:
-	m := r3.Unit(r3.Add(r3.Add(a, b), c))
+	m := a.Add(b).Add(c).Normalize()
 
 	fmt.Printf("Mean position: [%.8f, %.8f, %.8f]\n", m.X, m.Y, m.Z)
 

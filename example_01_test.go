@@ -39,18 +39,36 @@ func Example_n01AAndBToDelta() {
 
 	// SOLUTION:
 
-	// Step1: Convert to n-vectors (rad() converts to radians):
-	a := nvector.FromLatLon(nvector.Rad(aLat), nvector.Rad(aLon))
-	b := nvector.FromLatLon(nvector.Rad(bLat), nvector.Rad(bLon))
+	// Step1: Convert to n-vectors:
+	a := nvector.Position{
+		Vector: nvector.FromGeodeticCoordinates(
+			nvector.GeodeticCoordinates{
+				Latitude:  nvector.Radians(aLat),
+				Longitude: nvector.Radians(aLon),
+			},
+			nvector.ZAxisNorth,
+		),
+		Depth: aDepth,
+	}
+	b := nvector.Position{
+		Vector: nvector.FromGeodeticCoordinates(
+			nvector.GeodeticCoordinates{
+				Latitude:  nvector.Radians(bLat),
+				Longitude: nvector.Radians(bLon),
+			},
+			nvector.ZAxisNorth,
+		),
+		Depth: bDepth,
+	}
 
-	// Step2: Find p_AB_E (delta decomposed in E). WGS-84 ellipsoid is default:
-	de := nvector.Delta(a, aDepth, b, bDepth)
+	// Step2: Find p_AB_E (delta decomposed in E):
+	pe := nvector.Delta(a, b, nvector.WGS84, nvector.ZAxisNorth)
 
 	// Step3: Find R_EN for position A:
-	r := nvector.ToRotationMat(a)
+	r := nvector.ToRotationMatrix(a.Vector, nvector.ZAxisNorth)
 
 	// Step4: Find p_AB_N
-	d := r.MulVecTrans(de)
+	pn := pe.Transform(r.Transpose())
 	// (Note the transpose of R_EN: The "closest-rule" says that when decomposing,
 	// the frame in the subscript of the rotation matrix that is closest to the
 	// vector, should equal the frame where the vector is decomposed. Thus the
@@ -59,10 +77,10 @@ func Example_n01AAndBToDelta() {
 	// thus we must transpose it: R_EN' = R_NE)
 
 	// Step5: Also find the direction (azimuth) to B, relative to north:
-	az := math.Atan2(d.Y, d.X)
+	az := math.Atan2(pn.Y, pn.X)
 
-	fmt.Printf("Delta north, east, down = %.8f, %.8f, %.8f m\n", d.X, d.Y, d.Z)
-	fmt.Printf("Azimuth = %.8f deg\n", nvector.Deg(az))
+	fmt.Printf("Delta north, east, down = %.8f, %.8f, %.8f m\n", pn.X, pn.Y, pn.Z)
+	fmt.Printf("Azimuth = %.8f deg\n", nvector.Degrees(az))
 
 	// Output:
 	// Delta north, east, down = 331730.23478089, 332997.87498927, 17404.27136194 m

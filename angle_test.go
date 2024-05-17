@@ -4,27 +4,27 @@ import (
 	"testing"
 
 	. "github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/floats/scalar"
+	"github.com/ezzatron/nvector-go/internal/equality"
 )
 
-func Test_Deg(t *testing.T) {
+func Test_Degrees(t *testing.T) {
 	t.Run("it converts an angle in radians to degrees", func(t *testing.T) {
-		got := Deg(1)
+		got := Degrees(1)
 		want := 57.29577951308232
 
-		if !scalar.EqualWithinAbs(got, want, 1e-15) {
-			t.Errorf("got %v, want %v", got, want)
+		if eq, ineq := equality.EqualToFloat64(got, want, 1e-15); !eq {
+			equality.ReportInequality(t, "degrees", ineq)
 		}
 	})
 }
 
-func Test_Rad(t *testing.T) {
+func Test_Radians(t *testing.T) {
 	t.Run("it converts an angle in degrees to radians", func(t *testing.T) {
-		got := Rad(57.29577951308232)
+		got := Radians(57.29577951308232)
 		want := 1.0
 
-		if !scalar.EqualWithinAbs(got, want, 1e-15) {
-			t.Errorf("got %v, want %v", got, want)
+		if eq, ineq := equality.EqualToFloat64(got, want, 1e-15); !eq {
+			equality.ReportInequality(t, "radians", ineq)
 		}
 	})
 }

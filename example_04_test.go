@@ -23,10 +23,19 @@ func Example_n04LatLonToECEF() {
 	// SOLUTION:
 
 	// Step1: Convert to n-vector:
-	nvb := nvector.FromLatLon(nvector.Rad(bLat), nvector.Rad(bLon))
+	b := nvector.Position{
+		Vector: nvector.FromGeodeticCoordinates(
+			nvector.GeodeticCoordinates{
+				Latitude:  nvector.Radians(bLat),
+				Longitude: nvector.Radians(bLon),
+			},
+			nvector.ZAxisNorth,
+		),
+		Depth: -bHeight,
+	}
 
 	// Step2: Find the ECEF-vector p_EB_E:
-	pb := nvector.ToECEF(nvb, -bHeight)
+	pb := nvector.ToECEF(b, nvector.WGS84, nvector.ZAxisNorth)
 
 	fmt.Printf("p_EB_E = [%.8f, %.8f, %.8f] m\n", pb.X, pb.Y, pb.Z)
 

@@ -3,38 +3,38 @@ package testapi
 import (
 	"context"
 
-	"gonum.org/v1/gonum/spatial/r3"
+	"github.com/ezzatron/nvector-go"
 )
 
-// XYZToRotationMat converts Euler angles in XYZ order to a rotation matrix.
-func (c *Client) XYZToRotationMat(
+// XYZToRotationMatrix converts Euler angles in XYZ order to a rotation matrix.
+func (c *Client) XYZToRotationMatrix(
 	ctx context.Context,
-	x, y, z float64,
-) (*r3.Mat, error) {
+	a nvector.EulerXYZ,
+) (nvector.Matrix, error) {
 	return call(ctx, c, unmarshalMatrix, "xyz2R", map[string]any{
-		"x": x,
-		"y": y,
-		"z": z,
+		"x": a.X,
+		"y": a.Y,
+		"z": a.Z,
 	})
 }
 
-// ZYXToRotationMat converts Euler angles in ZYX order to a rotation matrix.
-func (c *Client) ZYXToRotationMat(
+// ZYXToRotationMatrix converts Euler angles in ZYX order to a rotation matrix.
+func (c *Client) ZYXToRotationMatrix(
 	ctx context.Context,
-	z, y, x float64,
-) (*r3.Mat, error) {
+	a nvector.EulerZYX,
+) (nvector.Matrix, error) {
 	return call(ctx, c, unmarshalMatrix, "zyx2R", map[string]any{
-		"z": z,
-		"y": y,
-		"x": x,
+		"z": a.Z,
+		"y": a.Y,
+		"x": a.X,
 	})
 }
 
-// RotationMatToXYZ converts a rotation matrix to Euler angles in XYZ order.
-func (c *Client) RotationMatToXYZ(
+// RotationMatrixToXYZ converts a rotation matrix to Euler angles in XYZ order.
+func (c *Client) RotationMatrixToXYZ(
 	ctx context.Context,
-	r *r3.Mat,
-) (x, y, z float64, err error) {
+	r nvector.Matrix,
+) (nvector.EulerXYZ, error) {
 	type res struct {
 		X float64 `json:"x"`
 		Y float64 `json:"y"`
@@ -45,17 +45,17 @@ func (c *Client) RotationMatToXYZ(
 		"R_AB": marshalMatrix(r),
 	})
 	if err != nil {
-		return 0, 0, 0, err
+		return nvector.EulerXYZ{}, err
 	}
 
-	return data.X, data.Y, data.Z, nil
+	return nvector.EulerXYZ(data), nil
 }
 
-// RotationMatToZYX converts a rotation matrix to Euler angles in ZYX order.
-func (c *Client) RotationMatToZYX(
+// RotationMatrixToZYX converts a rotation matrix to Euler angles in ZYX order.
+func (c *Client) RotationMatrixToZYX(
 	ctx context.Context,
-	r *r3.Mat,
-) (z, y, x float64, err error) {
+	r nvector.Matrix,
+) (nvector.EulerZYX, error) {
 	type res struct {
 		Z float64 `json:"z"`
 		Y float64 `json:"y"`
@@ -66,8 +66,8 @@ func (c *Client) RotationMatToZYX(
 		"R_AB": marshalMatrix(r),
 	})
 	if err != nil {
-		return 0, 0, 0, err
+		return nvector.EulerZYX{}, err
 	}
 
-	return data.Z, data.Y, data.X, nil
+	return nvector.EulerZYX(data), nil
 }

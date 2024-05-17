@@ -6,11 +6,9 @@ import (
 	"testing"
 
 	. "github.com/ezzatron/nvector-go"
-	"github.com/ezzatron/nvector-go/internal/options"
+	"github.com/ezzatron/nvector-go/internal/equality"
 	"github.com/ezzatron/nvector-go/internal/rapidgen"
 	"github.com/ezzatron/nvector-go/internal/testapi"
-	"gonum.org/v1/gonum/floats/scalar"
-	"gonum.org/v1/gonum/spatial/r3"
 	"pgregory.net/rapid"
 )
 
@@ -27,60 +25,27 @@ func Test_Delta(t *testing.T) {
 
 	t.Run("it matches the reference implementation", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
-			opts := rapidgen.Options().Draw(t, "opts")
-			o := options.New(opts)
+			e := rapidgen.Ellipsoid().Draw(t, "ellipsoid")
 
-			from := rapidgen.UnitVector().Draw(t, "from")
-			fromDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "fromDepth")
-			to := rapidgen.UnitVector().Draw(t, "to")
-			toDepth := rapidgen.Depth(o.Ellipsoid).Draw(t, "toDepth")
+			from := Position{
+				Vector: rapidgen.UnitVector().Draw(t, "fromNVector"),
+				Depth:  rapidgen.Depth(e).Draw(t, "fromDepth"),
+			}
+			to := Position{
+				Vector: rapidgen.UnitVector().Draw(t, "toNVector"),
+				Depth:  rapidgen.Depth(e).Draw(t, "toDepth"),
+			}
+			f := rapidgen.RotationMatrix().Draw(t, "coordFrame")
 
-			want, err := client.Delta(
-				ctx,
-				from,
-				fromDepth,
-				to,
-				toDepth,
-				opts...,
-			)
+			want, err := client.Delta(ctx, from, to, e, f)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got := Delta(from, fromDepth, to, toDepth, opts...)
+			got := Delta(from, to, e, f)
 
-			if !scalar.EqualWithinAbs(got.X, want.X, 1e-7) {
-				t.Errorf(
-					"Delta(%v, %v, %v, %v) = X: %v; want X: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.X,
-					want.X,
-				)
-			}
-			if !scalar.EqualWithinAbs(got.Y, want.Y, 1e-7) {
-				t.Errorf(
-					"Delta(%v, %v, %v, %v) = Y: %v; want Y: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.Y,
-					want.Y,
-				)
-			}
-			if !scalar.EqualWithinAbs(got.Z, want.Z, 1e-7) {
-				t.Errorf(
-					"Delta(%v, %v, %v, %v) = Z: %v; want Z: %v",
-					from,
-					fromDepth,
-					to,
-					toDepth,
-					got.Z,
-					want.Z,
-				)
+			if eq, ineq := equality.EqualToVector(got, want, 1e-7); !eq {
+				equality.ReportInequalities(t, ineq)
 			}
 		})
 	})
@@ -100,34 +65,33 @@ func Test_Destination(t *testing.T) {
 	t.Run("it matches the reference implementation", func(t *testing.T) {
 		rapid.Check(t, func(t *rapid.T) {
 			type inputs struct {
-				Opts      []Option
-				From      r3.Vec
-				FromDepth float64
-				Delta     r3.Vec
+				From  Position
+				Delta Vector
+				E     Ellipsoid
+				F     Matrix
 			}
 
 			i := rapid.Custom(func(t *rapid.T) inputs {
-				opts := rapidgen.Options().Draw(t, "opts")
-				o := options.New(opts)
+				e := rapidgen.Ellipsoid().Draw(t, "ellipsoid")
 
 				return inputs{
-					Opts:      opts,
-					From:      rapidgen.UnitVector().Draw(t, "from"),
-					FromDepth: rapidgen.Depth(o.Ellipsoid).Draw(t, "fromDepth"),
-					Delta:     rapidgen.EcefVector(o.Ellipsoid).Draw(t, "delta"),
+					From: Position{
+						Vector: rapidgen.UnitVector().Draw(t, "fromNVector"),
+						Depth:  rapidgen.Depth(e).Draw(t, "fromDepth"),
+					},
+					Delta: rapidgen.EcefVector(e).Draw(t, "delta"),
+					E:     e,
+					F:     rapidgen.RotationMatrix().Draw(t, "coordFrame"),
 				}
 			}).Filter(func(i inputs) bool {
-				o := options.New(i.Opts)
-				a := o.Ellipsoid.SemiMajorAxis
-				f := o.Ellipsoid.Flattening
+				a := i.E.SemiMajorAxis
+				f := i.E.Flattening
 
-				ecefr := o.CoordFrame.MulVec(
-					r3.Add(ToECEF(i.From, i.FromDepth, i.Opts...), i.Delta),
-				)
+				v := ToECEF(i.From, i.E, i.F).Add(i.Delta).Transform(i.F)
 
 				// filter vectors where the x or yz components are zero after rotation
 				// this causes a division by zero in the Python implementation
-				if ecefr.X == 0 || ecefr.Y+ecefr.Z == 0 {
+				if v.X == 0 || v.Y+v.Z == 0 {
 					return false
 				}
 
@@ -135,9 +99,9 @@ func Test_Destination(t *testing.T) {
 				// square root of a negative number
 				// not sure why this happens, the math is beyond me
 				e2 := 2*f - math.Pow(f, 2)
-				R2 := math.Pow(ecefr.Y, 2) + math.Pow(ecefr.Z, 2)
+				R2 := math.Pow(v.Y, 2) + math.Pow(v.Z, 2)
 				p := R2 / math.Pow(a, 2)
-				q := (1 - e2) / math.Pow(a, 2) * math.Pow(ecefr.X, 2)
+				q := (1 - e2) / math.Pow(a, 2) * math.Pow(v.X, 2)
 				r := (p + q - math.Pow(e2, 2)) / 6
 				s := math.Pow(e2, 2) * p * q / (4 * math.Pow(r, 3))
 				if math.IsNaN(s) || s <= 0 {
@@ -148,62 +112,21 @@ func Test_Destination(t *testing.T) {
 			}).Draw(t, "inputs")
 
 			from := i.From
-			fromDepth := i.FromDepth
 			delta := i.Delta
-			opts := i.Opts
+			e := i.E
+			f := i.F
 
-			wantNv, wantD, err := client.Destination(
-				ctx,
-				from,
-				fromDepth,
-				delta,
-				opts...,
-			)
+			want, err := client.Destination(ctx, from, delta, e, f)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			gotNv, gotD := Destination(from, fromDepth, delta, opts...)
+			got := Destination(from, delta, e, f)
 
-			if !scalar.EqualWithinAbs(gotNv.X, wantNv.X, 1e-12) {
-				t.Errorf(
-					"Destination(%v, %v, %v) = X: %v; want X: %v",
-					from,
-					fromDepth,
-					delta,
-					gotNv.X,
-					wantNv.X,
-				)
-			}
-			if !scalar.EqualWithinAbs(gotNv.Y, wantNv.Y, 1e-12) {
-				t.Errorf(
-					"Destination(%v, %v, %v) = Y: %v; want Y: %v",
-					from,
-					fromDepth,
-					delta,
-					gotNv.Y,
-					wantNv.Y,
-				)
-			}
-			if !scalar.EqualWithinAbs(gotNv.Z, wantNv.Z, 1e-12) {
-				t.Errorf(
-					"Destination(%v, %v, %v) = Z: %v; want Z: %v",
-					from,
-					fromDepth,
-					delta,
-					gotNv.Z,
-					wantNv.Z,
-				)
-			}
-			if !scalar.EqualWithinAbs(gotD, wantD, 1e-8) {
-				t.Errorf(
-					"Destination(%v, %v, %v) = D: %v; want D: %v",
-					from,
-					fromDepth,
-					delta,
-					gotD,
-					wantD,
-				)
+			eq, ineq := equality.EqualToVectorWithDepth(got, want, 1e-12, 1e-7)
+
+			if !eq {
+				equality.ReportInequalities(t, ineq)
 			}
 		})
 	})

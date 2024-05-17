@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 9: Intersection of two paths
@@ -17,35 +16,59 @@ import (
 func Example_n09IntersectionOfPaths() {
 	// Two paths A and B are given by two pairs of positions:
 	// Enter elements directly:
-	// a1 := r3.Unit(r3.Vec{X: 0, Y: 0, Z: 1})
-	// a2 := r3.Unit(r3.Vec{X: -1, Y: 0, Z: 1})
-	// b1 := r3.Unit(r3.Vec{X: -2, Y: -2, Z: 4})
-	// b2 := r3.Unit(r3.Vec{X: -2, Y: 2, Z: 2})
+	// a1 := nvector.Vector{X: 0, Y: 0, Z: 1}.Normalize()
+	// a2 := nvector.Vector{X: -1, Y: 0, Z: 1}.Normalize()
+	// b1 := nvector.Vector{X: -2, Y: -2, Z: 4}.Normalize()
+	// b2 := nvector.Vector{X: -2, Y: 2, Z: 2}.Normalize()
 
 	// or input as lat/long in deg:
-	a1 := nvector.FromLatLon(nvector.Rad(50), nvector.Rad(180))
-	a2 := nvector.FromLatLon(nvector.Rad(90), nvector.Rad(180))
-	b1 := nvector.FromLatLon(nvector.Rad(60), nvector.Rad(160))
-	b2 := nvector.FromLatLon(nvector.Rad(80), nvector.Rad(-140))
+	a1 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(50),
+			Longitude: nvector.Radians(180),
+		},
+		nvector.ZAxisNorth,
+	)
+	a2 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(90),
+			Longitude: nvector.Radians(180),
+		},
+		nvector.ZAxisNorth,
+	)
+	b1 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(60),
+			Longitude: nvector.Radians(160),
+		},
+		nvector.ZAxisNorth,
+	)
+	b2 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(80),
+			Longitude: nvector.Radians(-140),
+		},
+		nvector.ZAxisNorth,
+	)
 
 	// SOLUTION:
 
 	// Find the intersection between the two paths, n_EC_E:
-	cTmp := r3.Cross(r3.Cross(a1, a2), r3.Cross(b1, b2))
+	cTmp := a1.Cross(a2).Cross(b1.Cross(b2))
 
 	// n_EC_E_tmp is one of two solutions, the other is -n_EC_E_tmp. Select the
 	// one that is closest to n_EA1_E, by selecting sign from the dot product
 	// between n_EC_E_tmp and n_EA1_E:
-	c := r3.Scale(math.Copysign(1, r3.Dot(cTmp, a1)), cTmp)
+	c := cTmp.Scale(math.Copysign(1, cTmp.Dot(a1)))
 
 	// When displaying the resulting position for humans, it is more convenient
 	// to see lat, long:
-	lat, lon := nvector.ToLatLon(c)
+	gc := nvector.ToGeodeticCoordinates(c, nvector.ZAxisNorth)
 
 	fmt.Printf(
 		"Intersection: lat, long = %.8f, %.8f deg\n",
-		nvector.Deg(lat),
-		nvector.Deg(lon),
+		nvector.Degrees(gc.Latitude),
+		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:

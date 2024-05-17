@@ -3,14 +3,41 @@ package rapidgen
 import (
 	"math"
 
-	"gonum.org/v1/gonum/num/quat"
-	"gonum.org/v1/gonum/spatial/r3"
+	"github.com/ezzatron/nvector-go"
 	"pgregory.net/rapid"
 )
 
-// Quaternion creates a rapid generator for quaternions.
-func Quaternion() *rapid.Generator[quat.Number] {
-	return rapid.Custom(func(t *rapid.T) quat.Number {
+// RotationMatrix creates a rapid generator for rotation matrices.
+func RotationMatrix() *rapid.Generator[nvector.Matrix] {
+	return rapid.Custom(func(t *rapid.T) nvector.Matrix {
+		// based on https://github.com/rawify/Quaternion.js/blob/c3834673b502e64e1866dbbf13568c0be93e52cc/q.js#L791
+		q := quaternion().Draw(t, "quaternion")
+		w, x, y, z := q.W, q.X, q.Y, q.Z
+
+		wx := w * x
+		wy := w * y
+		wz := w * z
+		xx := x * x
+		xy := x * y
+		xz := x * z
+		yy := y * y
+		yz := y * z
+		zz := z * z
+
+		return nvector.Matrix{
+			XX: 1 - 2*(yy+zz), XY: 2 * (xy - wz), XZ: 2 * (xz + wy),
+			YX: 2 * (xy + wz), YY: 1 - 2*(xx+zz), YZ: 2 * (yz - wx),
+			ZX: 2 * (xz - wy), ZY: 2 * (yz + wx), ZZ: 1 - 2*(xx+yy),
+		}
+	})
+}
+
+type quat struct {
+	W, X, Y, Z float64
+}
+
+func quaternion() *rapid.Generator[quat] {
+	return rapid.Custom(func(t *rapid.T) quat {
 		// based on https://github.com/mrdoob/three.js/blob/a2e9ee8204b67f9dca79f48cf620a34a05aa8126/src/math/Quaternion.js#L592
 		// Ken Shoemake
 		// Uniform random rotations
@@ -27,31 +54,6 @@ func Quaternion() *rapid.Generator[quat.Number] {
 		z := r2 * math.Sin(theta2)
 		w := r2 * math.Cos(theta2)
 
-		return quat.Number{Real: w, Imag: x, Jmag: y, Kmag: z}
-	})
-}
-
-// RotationMat creates a rapid generator for rotation matrices.
-func RotationMat() *rapid.Generator[*r3.Mat] {
-	return rapid.Custom(func(t *rapid.T) *r3.Mat {
-		// based on https://github.com/rawify/Quaternion.js/blob/c3834673b502e64e1866dbbf13568c0be93e52cc/q.js#L791
-		q := Quaternion().Draw(t, "quaternion")
-		w, x, y, z := q.Real, q.Imag, q.Jmag, q.Kmag
-
-		wx := w * x
-		wy := w * y
-		wz := w * z
-		xx := x * x
-		xy := x * y
-		xz := x * z
-		yy := y * y
-		yz := y * z
-		zz := z * z
-
-		return r3.NewMat([]float64{
-			1 - 2*(yy+zz), 2 * (xy - wz), 2 * (xz + wy),
-			2 * (xy + wz), 1 - 2*(xx+zz), 2 * (yz - wx),
-			2 * (xz - wy), 2 * (yz + wx), 1 - 2*(xx+yy),
-		})
+		return quat{w, x, y, z}
 	})
 }

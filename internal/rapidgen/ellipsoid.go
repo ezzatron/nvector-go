@@ -1,46 +1,30 @@
 package rapidgen
 
 import (
-	"github.com/ezzatron/nvector-go/internal/options"
-	"gonum.org/v1/gonum/spatial/r3"
+	"github.com/ezzatron/nvector-go"
 	"pgregory.net/rapid"
 )
 
 // Depth creates a rapid generator for depths relative to an ellipsoid.
-func Depth(e options.Ellipsoid) *rapid.Generator[float64] {
-	// Semi-minor axis
-	b := e.SemiMajorAxis * (1 - e.Flattening)
-
-	return rapid.Float64Range(-b, b)
+func Depth(e nvector.Ellipsoid) *rapid.Generator[float64] {
+	return rapid.Float64Range(-e.SemiMinorAxis, e.SemiMinorAxis)
 }
 
 // EcefVector creates a rapid generator for ECEF position vectors relative to an
 // ellipsoid.
-func EcefVector(e options.Ellipsoid) *rapid.Generator[r3.Vec] {
-	// Semi-minor axis
-	b := e.SemiMajorAxis * (1 - e.Flattening)
-
-	return VectorRange(e.SemiMajorAxis-b, e.SemiMajorAxis+b)
+func EcefVector(e nvector.Ellipsoid) *rapid.Generator[nvector.Vector] {
+	return VectorRange(
+		e.SemiMajorAxis-e.SemiMinorAxis,
+		e.SemiMajorAxis+e.SemiMinorAxis,
+	)
 }
 
 // Ellipsoid creates a rapid generator for ellipsoids.
-func Ellipsoid() *rapid.Generator[options.Ellipsoid] {
-	return rapid.SampledFrom([]options.Ellipsoid{
-		{
-			SemiMajorAxis: 6378137,
-			Flattening:    1 / 298.257222101,
-		},
-		{
-			SemiMajorAxis: 6378135,
-			Flattening:    1 / 298.26,
-		},
-		{
-			SemiMajorAxis: 6378137,
-			Flattening:    1 / 298.257223563,
-		},
-		{
-			SemiMajorAxis: 6378137,
-			Flattening:    0,
-		},
+func Ellipsoid() *rapid.Generator[nvector.Ellipsoid] {
+	return rapid.SampledFrom([]nvector.Ellipsoid{
+		nvector.GRS80,
+		nvector.WGS72,
+		nvector.WGS84,
+		nvector.WGS84Sphere,
 	})
 }

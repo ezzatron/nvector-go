@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 5: Surface distance
@@ -17,29 +16,41 @@ import (
 func Example_n05SurfaceDistance() {
 	// Position A and B are given as n_EA_E and n_EB_E:
 	// Enter elements directly:
-	// a := r3.Unit(r3.Vec{X: 1, Y: 0, Z: -2})
-	// b := r3.Unit(r3.Vec{X: -1, Y: -2, Z: 0})
+	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
+	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
 
 	// or input as lat/long in deg:
-	a := nvector.FromLatLon(nvector.Rad(88), nvector.Rad(0))
-	b := nvector.FromLatLon(nvector.Rad(89), nvector.Rad(-170))
+	a := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(88),
+			Longitude: nvector.Radians(0),
+		},
+		nvector.ZAxisNorth,
+	)
+	b := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(89),
+			Longitude: nvector.Radians(-170),
+		},
+		nvector.ZAxisNorth,
+	)
 
 	// m, mean Earth radius
-	re := 6371e3
+	r := 6371e3
 
 	// SOLUTION:
 
 	// The great circle distance is given by equation (16) in Gade (2010):
 	// Well conditioned for all angles:
-	sab := math.Atan2(r3.Norm(r3.Cross(a, b)), r3.Dot(a, b)) * re
+	gcd := math.Atan2(a.Cross(b).Norm(), a.Dot(b)) * r
 
 	// The Euclidean distance is given by:
-	dab := r3.Norm(r3.Sub(b, a)) * re
+	ed := b.Sub(a).Norm() * r
 
 	fmt.Printf(
 		"Great circle distance = %.8f km, Euclidean distance = %.8f km\n",
-		sab/1000,
-		dab/1000,
+		gcd/1000,
+		ed/1000,
 	)
 
 	// Output:

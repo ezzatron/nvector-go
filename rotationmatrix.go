@@ -2,26 +2,23 @@ package nvector
 
 import (
 	"math"
-
-	"github.com/ezzatron/nvector-go/internal/options"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
-// FromRotationMat converts a rotation matrix to an n-vector.
+// FromRotationMatrix converts a rotation matrix to an n-vector.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R_EN2n_E.m
-func FromRotationMat(r *r3.Mat) r3.Vec {
-	return r.MulVec(r3.Vec{X: 0, Y: 0, Z: -1})
+func FromRotationMatrix(r Matrix) Vector {
+	return Vector{0, 0, -1}.Transform(r)
 }
 
-// ToRotationMat converts n-vector to a rotation matrix.
+// ToRotationMatrix converts n-vector to a rotation matrix.
+//
+// f is the coordinate frame in which the n-vector is decomposed.
 //
 // See: https://github.com/FFI-no/n-vector/blob/82d749a67cc9f332f48c51aa969cdc277b4199f2/nvector/n_E2R_EN.m
-func ToRotationMat(nv r3.Vec, opts ...Option) *r3.Mat {
-	o := options.New(opts)
-
-	// CoordFrame selects correct E-axes
-	nvr := o.CoordFrame.MulVec(nv)
+func ToRotationMatrix(v Vector, f Matrix) Matrix {
+	// f selects correct E-axes
+	v = v.Transform(f)
 
 	// N coordinate frame (North-East-Down) is defined in Table 2 in Gade (2010)
 
@@ -30,16 +27,16 @@ func ToRotationMat(nv r3.Vec, opts ...Option) *r3.Mat {
 
 	// Find z-axis of N (Nz):
 	// z-axis of N (down) points opposite to n-vector
-	zx := -nvr.X
-	zy := -nvr.Y
-	zz := -nvr.Z
+	zx := -v.X
+	zy := -v.Y
+	zz := -v.Z
 
 	// Find y-axis of N (East)(remember that N is singular at Poles)
 	// Equation (9) in Gade (2010):
 	// Ny points perpendicular to the plane formed by n-vector and Earth's spin
 	// axis
-	yyDir := -nvr.Z
-	yzDir := nvr.Y
+	yyDir := -v.Z
+	yzDir := v.Y
 	yDirNorm := math.Hypot(yyDir, yzDir)
 	onPoles := math.Hypot(yyDir, yzDir) == 0
 	var yy, yz float64
@@ -60,38 +57,34 @@ func ToRotationMat(nv r3.Vec, opts ...Option) *r3.Mat {
 	xz := -yy * zx
 
 	// Form R_EN from the unit vectors:
-	// CoordFrame selects correct E-axes
-	r := r3.NewMat(nil)
-	r.Mul(o.CoordFrame.T(), r3.NewMat([]float64{
+	// f selects correct E-axes
+	return f.Transpose().Multiply(Matrix{
 		xx, 0, zx,
 		xy, yy, zy,
 		xz, yz, zz,
-	}))
-
-	return r
+	})
 }
 
-// ToRotationMatUsingWanderAzimuth converts an n-vector and a wander azimuth
+// ToRotationMatrixUsingWanderAzimuth converts an n-vector and a wander azimuth
 // angle to a rotation matrix.
 //
+// w is the wander azimuth angle in radians. f is the coordinate frame in which
+// the n-vector is decomposed.
+//
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/n_E_and_wa2R_EL.m
-func ToRotationMatUsingWanderAzimuth(
-	nv r3.Vec,
-	wa float64,
-	opts ...Option,
-) *r3.Mat {
-	o := options.New(opts)
-
-	// [latitude,longitude] = n_E2lat_long(n_E);
-	lat, lon := ToLatLon(nv, opts...)
+func ToRotationMatrixUsingWanderAzimuth(
+	v Vector,
+	w float64,
+	f Matrix,
+) Matrix {
+	l := ToGeodeticCoordinates(v, f)
 
 	// Longitude, -latitude, and wander azimuth are the x-y-z Euler angles (about
 	// new axes) for R_EL. See also the second paragraph of Section 5.2 in Gade
 	// (2010):
 
-	// CoordFrame selects correct E-axes
-	r := r3.NewMat(nil)
-	r.Mul(o.CoordFrame.T(), XYZToRotationMat(lon, -lat, wa))
-
-	return r
+	// f selects correct E-axes
+	return f.Transpose().Multiply(
+		EulerXYZToRotationMatrix(EulerXYZ{l.Longitude, -l.Latitude, w}),
+	)
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ezzatron/nvector-go"
-	"gonum.org/v1/gonum/spatial/r3"
 )
 
 // Example 6: Interpolated position
@@ -16,12 +15,24 @@ import (
 func Example_n06InterpolatedPosition() {
 	// Position B is given at time t0 as n_EB_E_t0 and at time t1 as n_EB_E_t1:
 	// Enter elements directly:
-	// pt0 := r3.Unit(r3.Vec{X: 1, Y: 0, Z: -2})
-	// pt1 := r3.Unit(r3.Vec{X: -1, Y: -2, Z: 0})
+	// pt0 := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
+	// pt1 := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
 
 	// or input as lat/long in deg:
-	pt0 := nvector.FromLatLon(nvector.Rad(89.9), nvector.Rad(-150))
-	pt1 := nvector.FromLatLon(nvector.Rad(89.9), nvector.Rad(150))
+	pt0 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(89.9),
+			Longitude: nvector.Radians(-150),
+		},
+		nvector.ZAxisNorth,
+	)
+	pt1 := nvector.FromGeodeticCoordinates(
+		nvector.GeodeticCoordinates{
+			Latitude:  nvector.Radians(89.9),
+			Longitude: nvector.Radians(150),
+		},
+		nvector.ZAxisNorth,
+	)
 
 	// The times are given as:
 	t0 := 10.0
@@ -33,24 +44,16 @@ func Example_n06InterpolatedPosition() {
 	// SOLUTION:
 
 	// Using standard interpolation:
-	pti := r3.Unit(
-		r3.Add(
-			pt0,
-			r3.Scale(
-				(ti-t0)/(t1-t0),
-				r3.Sub(pt1, pt0),
-			),
-		),
-	)
+	pti := pt0.Add(pt1.Sub(pt0).Scale((ti - t0) / (t1 - t0)))
 
 	// When displaying the resulting position for humans, it is more convenient
 	// to see lat, long:
-	lat, lon := nvector.ToLatLon(pti)
+	gc := nvector.ToGeodeticCoordinates(pti, nvector.ZAxisNorth)
 
 	fmt.Printf(
 		"Interpolated position: lat, long = %.8f, %.8f deg\n",
-		nvector.Deg(lat),
-		nvector.Deg(lon),
+		nvector.Degrees(gc.Latitude),
+		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
