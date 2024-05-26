@@ -15,7 +15,6 @@ _Functions for performing geographical position calculations using n-vectors_
 [badge-coverage-link]: https://codecov.io/gh/ezzatron/nvector-go
 [badge-version-image]:
   https://img.shields.io/github/v/tag/ezzatron/nvector-go?include_prereleases&sort=semver&logo=go&label=github.com%2Fezzatron%2Fnvector-go&style=for-the-badge
-
 [badge-version-link]: https://pkg.go.dev/github.com/ezzatron/nvector-go
 
 This library is a port of the [Matlab n-vector library] by [Kenneth Gade]. All
@@ -27,6 +26,11 @@ the [10 examples from the n-vector page].
 [matlab n-vector library]: https://github.com/FFI-no/n-vector
 [kenneth gade]: https://github.com/KennethGade
 [10 examples from the n-vector page]: https://www.ffi.no/en/research/n-vector
+
+See the [reference documentation] for a list of all functions and their
+signatures.
+
+[reference documentation]: https://pkg.go.dev/github.com/ezzatron/nvector-go
 
 ## Installation
 
