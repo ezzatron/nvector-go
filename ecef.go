@@ -6,7 +6,7 @@ import (
 
 // FromECEF converts an ECEF position vector to an n-vector and depth.
 //
-// f is the coordinate frame in which the n-vector is decomposed.
+// f is the coordinate frame in which the vectors are decomposed.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/p_EB_E2n_EB_E.m
 func FromECEF(v Vector, e Ellipsoid, f Matrix) Position {
@@ -21,8 +21,10 @@ func FromECEF(v Vector, e Ellipsoid, f Matrix) Position {
 	// R = component of v in the equatorial plane
 	R := math.Sqrt(R2)
 
+	x2 := math.Pow(v.X, 2)
+
 	p := R2 / math.Pow(e.SemiMajorAxis, 2)
-	q := (1 - e2) / math.Pow(e.SemiMajorAxis, 2) * math.Pow(v.X, 2)
+	q := (1 - e2) / math.Pow(e.SemiMajorAxis, 2) * x2
 	r := (p + q - math.Pow(e2, 2)) / 6
 
 	s := math.Pow(e2, 2) * p * q / (4 * math.Pow(r, 3))
@@ -37,9 +39,10 @@ func FromECEF(v Vector, e Ellipsoid, f Matrix) Position {
 	d := k * R / (k + e2)
 
 	// Calculate height:
-	h := (k + e2 - 1) / k * math.Sqrt(math.Pow(d, 2)+math.Pow(v.X, 2))
+	hf := math.Sqrt(math.Pow(d, 2) + x2)
+	h := (k + e2 - 1) / k * hf
 
-	temp := 1 / math.Sqrt(math.Pow(d, 2)+math.Pow(v.X, 2))
+	temp := 1 / hf
 
 	return Position{
 		// Ensure unit length:
@@ -54,7 +57,7 @@ func FromECEF(v Vector, e Ellipsoid, f Matrix) Position {
 
 // ToECEF converts an n-vector and depth to an ECEF position vector.
 //
-// f is the coordinate frame in which the n-vector is decomposed.
+// f is the coordinate frame in which the vectors are decomposed.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/n_EB_E2p_EB_E.m
 func ToECEF(v Position, e Ellipsoid, f Matrix) Vector {

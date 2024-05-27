@@ -12,7 +12,73 @@ import (
 	"pgregory.net/rapid"
 )
 
-func Test_RotationMatrixToXYZ(t *testing.T) {
+func Test_EulerXYZToRotationMatrix(t *testing.T) {
+	client, err := testapi.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		client.Close()
+	})
+
+	ctx := context.Background()
+
+	t.Run("it matches the reference implementation", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			a := EulerXYZ{
+				rapidgen.Radians().Draw(t, "x"),
+				rapidgen.Radians().Draw(t, "y"),
+				rapidgen.Radians().Draw(t, "z"),
+			}
+
+			want, err := client.EulerXYZToRotationMatrix(ctx, a)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := EulerXYZToRotationMatrix(a)
+
+			if eq, ineq := equality.EqualToMatrix(got, want, 1e-15); !eq {
+				equality.ReportInequalities(t, ineq)
+			}
+		})
+	})
+}
+
+func Test_EulerZYXToRotationMatrix(t *testing.T) {
+	client, err := testapi.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		client.Close()
+	})
+
+	ctx := context.Background()
+
+	t.Run("it matches the reference implementation", func(t *testing.T) {
+		rapid.Check(t, func(t *rapid.T) {
+			a := EulerZYX{
+				rapidgen.Radians().Draw(t, "x"),
+				rapidgen.Radians().Draw(t, "y"),
+				rapidgen.Radians().Draw(t, "z"),
+			}
+
+			want, err := client.EulerZYXToRotationMatrix(ctx, a)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got := EulerZYXToRotationMatrix(a)
+
+			if eq, ineq := equality.EqualToMatrix(got, want, 1e-15); !eq {
+				equality.ReportInequalities(t, ineq)
+			}
+		})
+	})
+}
+
+func Test_RotationMatrixToEulerXYZ(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +101,7 @@ func Test_RotationMatrixToXYZ(t *testing.T) {
 				return cy > 1e-14
 			}).Draw(t, "r")
 
-			want, err := client.RotationMatrixToXYZ(ctx, r)
+			want, err := client.RotationMatrixToEulerXYZ(ctx, r)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -64,7 +130,7 @@ func Test_RotationMatrixToXYZ(t *testing.T) {
 	})
 }
 
-func Test_RotationMatrixToZYX(t *testing.T) {
+func Test_RotationMatrixToEulerZYX(t *testing.T) {
 	client, err := testapi.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -87,7 +153,7 @@ func Test_RotationMatrixToZYX(t *testing.T) {
 				return cy > 1e-14
 			}).Draw(t, "r")
 
-			want, err := client.RotationMatrixToZYX(ctx, r)
+			want, err := client.RotationMatrixToEulerZYX(ctx, r)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -113,71 +179,5 @@ func Test_RotationMatrixToZYX(t *testing.T) {
 		if eq, ineq := equality.EqualToEulerAnglesZYX(got, want, 1e-15); !eq {
 			equality.ReportInequalities(t, ineq)
 		}
-	})
-}
-
-func Test_XYZToRotationMatrix(t *testing.T) {
-	client, err := testapi.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		client.Close()
-	})
-
-	ctx := context.Background()
-
-	t.Run("it matches the reference implementation", func(t *testing.T) {
-		rapid.Check(t, func(t *rapid.T) {
-			a := EulerXYZ{
-				rapidgen.Radians().Draw(t, "x"),
-				rapidgen.Radians().Draw(t, "y"),
-				rapidgen.Radians().Draw(t, "z"),
-			}
-
-			want, err := client.XYZToRotationMatrix(ctx, a)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got := EulerXYZToRotationMatrix(a)
-
-			if eq, ineq := equality.EqualToMatrix(got, want, 1e-15); !eq {
-				equality.ReportInequalities(t, ineq)
-			}
-		})
-	})
-}
-
-func Test_ZYXToRotationMatrix(t *testing.T) {
-	client, err := testapi.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		client.Close()
-	})
-
-	ctx := context.Background()
-
-	t.Run("it matches the reference implementation", func(t *testing.T) {
-		rapid.Check(t, func(t *rapid.T) {
-			a := EulerZYX{
-				rapidgen.Radians().Draw(t, "x"),
-				rapidgen.Radians().Draw(t, "y"),
-				rapidgen.Radians().Draw(t, "z"),
-			}
-
-			want, err := client.ZYXToRotationMatrix(ctx, a)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got := EulerZYXToRotationMatrix(a)
-
-			if eq, ineq := equality.EqualToMatrix(got, want, 1e-15); !eq {
-				equality.ReportInequalities(t, ineq)
-			}
-		})
 	})
 }

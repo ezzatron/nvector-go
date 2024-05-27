@@ -18,6 +18,42 @@ type EulerZYX struct {
 	Z, Y, X float64
 }
 
+// EulerXYZToRotationMatrix converts Euler angles in XYZ order to a rotation matrix.
+//
+// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/xyz2R.m
+func EulerXYZToRotationMatrix(a EulerXYZ) Matrix {
+	cz := math.Cos(a.Z)
+	sz := math.Sin(a.Z)
+	cy := math.Cos(a.Y)
+	sy := math.Sin(a.Y)
+	cx := math.Cos(a.X)
+	sx := math.Sin(a.X)
+
+	return Matrix{
+		cy * cz, -cy * sz, sy,
+		sy*sx*cz + cx*sz, -sy*sx*sz + cx*cz, -cy * sx,
+		-sy*cx*cz + sx*sz, sy*cx*sz + sx*cz, cy * cx,
+	}
+}
+
+// EulerZYXToRotationMatrix converts Euler angles in ZYX order to a rotation matrix.
+//
+// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/zyx2R.m
+func EulerZYXToRotationMatrix(a EulerZYX) Matrix {
+	cz := math.Cos(a.Z)
+	sz := math.Sin(a.Z)
+	cy := math.Cos(a.Y)
+	sy := math.Sin(a.Y)
+	cx := math.Cos(a.X)
+	sx := math.Sin(a.X)
+
+	return Matrix{
+		cz * cy, -sz*cx + cz*sy*sx, sz*sx + cz*sy*cx,
+		sz * cy, cz*cx + sz*sy*sx, -cz*sx + sz*sy*cx,
+		-sy, cy * sx, cy * cx,
+	}
+}
+
 // RotationMatrixToEulerXYZ converts a rotation matrix to Euler angles in XYZ order.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R2xyz.m
@@ -96,40 +132,4 @@ func RotationMatrixToEulerZYX(r Matrix) EulerZYX {
 	}
 
 	return a
-}
-
-// EulerXYZToRotationMatrix converts Euler angles in XYZ order to a rotation matrix.
-//
-// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/xyz2R.m
-func EulerXYZToRotationMatrix(a EulerXYZ) Matrix {
-	cz := math.Cos(a.Z)
-	sz := math.Sin(a.Z)
-	cy := math.Cos(a.Y)
-	sy := math.Sin(a.Y)
-	cx := math.Cos(a.X)
-	sx := math.Sin(a.X)
-
-	return Matrix{
-		cy * cz, -cy * sz, sy,
-		sy*sx*cz + cx*sz, -sy*sx*sz + cx*cz, -cy * sx,
-		-sy*cx*cz + sx*sz, sy*cx*sz + sx*cz, cy * cx,
-	}
-}
-
-// EulerZYXToRotationMatrix converts Euler angles in ZYX order to a rotation matrix.
-//
-// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/zyx2R.m
-func EulerZYXToRotationMatrix(a EulerZYX) Matrix {
-	cz := math.Cos(a.Z)
-	sz := math.Sin(a.Z)
-	cy := math.Cos(a.Y)
-	sy := math.Sin(a.Y)
-	cx := math.Cos(a.X)
-	sx := math.Sin(a.X)
-
-	return Matrix{
-		cz * cy, -sz*cx + cz*sy*sx, sz*sx + cz*sy*cx,
-		sz * cy, cz*cx + sz*sy*sx, -cz*sx + sz*sy*cx,
-		-sy, cy * sx, cy * cx,
-	}
 }

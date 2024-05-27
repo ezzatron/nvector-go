@@ -6,6 +6,7 @@ import (
 
 // FromRotationMatrix converts a rotation matrix to an n-vector.
 //
+// See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R_EL2n_E.m
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/R_EN2n_E.m
 func FromRotationMatrix(r Matrix) Vector {
 	return Vector{0, 0, -1}.Transform(r)

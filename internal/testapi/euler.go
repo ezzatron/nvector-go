@@ -6,8 +6,8 @@ import (
 	"github.com/ezzatron/nvector-go"
 )
 
-// XYZToRotationMatrix converts Euler angles in XYZ order to a rotation matrix.
-func (c *Client) XYZToRotationMatrix(
+// EulerXYZToRotationMatrix converts Euler angles in XYZ order to a rotation matrix.
+func (c *Client) EulerXYZToRotationMatrix(
 	ctx context.Context,
 	a nvector.EulerXYZ,
 ) (nvector.Matrix, error) {
@@ -18,8 +18,8 @@ func (c *Client) XYZToRotationMatrix(
 	})
 }
 
-// ZYXToRotationMatrix converts Euler angles in ZYX order to a rotation matrix.
-func (c *Client) ZYXToRotationMatrix(
+// EulerZYXToRotationMatrix converts Euler angles in ZYX order to a rotation matrix.
+func (c *Client) EulerZYXToRotationMatrix(
 	ctx context.Context,
 	a nvector.EulerZYX,
 ) (nvector.Matrix, error) {
@@ -30,8 +30,8 @@ func (c *Client) ZYXToRotationMatrix(
 	})
 }
 
-// RotationMatrixToXYZ converts a rotation matrix to Euler angles in XYZ order.
-func (c *Client) RotationMatrixToXYZ(
+// RotationMatrixToEulerXYZ converts a rotation matrix to Euler angles in XYZ order.
+func (c *Client) RotationMatrixToEulerXYZ(
 	ctx context.Context,
 	r nvector.Matrix,
 ) (nvector.EulerXYZ, error) {
@@ -51,8 +51,8 @@ func (c *Client) RotationMatrixToXYZ(
 	return nvector.EulerXYZ(data), nil
 }
 
-// RotationMatrixToZYX converts a rotation matrix to Euler angles in ZYX order.
-func (c *Client) RotationMatrixToZYX(
+// RotationMatrixToEulerZYX converts a rotation matrix to Euler angles in ZYX order.
+func (c *Client) RotationMatrixToEulerZYX(
 	ctx context.Context,
 	r nvector.Matrix,
 ) (nvector.EulerZYX, error) {
