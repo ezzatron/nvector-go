@@ -10,6 +10,15 @@ Versioning].
 
 ## Unreleased
 
+## [v0.1.1] - 2024-05-27
+
+[v0.1.1]: https://github.com/ezzatron/nvector-go/releases/tag/v0.1.1
+
+### Fixed
+
+- Added examples with illustrations to README.
+- Fixed a typo in the README.
+
 ## [v0.1.0] - 2024-05-27
 
 [v0.1.0]: https://github.com/ezzatron/nvector-go/releases/tag/v0.1.0
