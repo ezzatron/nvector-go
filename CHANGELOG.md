@@ -10,6 +10,14 @@ Versioning].
 
 ## Unreleased
 
+## [v0.1.2] - 2024-05-27
+
+[v0.1.2]: https://github.com/ezzatron/nvector-go/releases/tag/v0.1.2
+
+### Fixed
+
+- Added a workflow to publish the reference docs to pkg.go.dev.
+
 ## [v0.1.1] - 2024-05-27
 
 [v0.1.1]: https://github.com/ezzatron/nvector-go/releases/tag/v0.1.1
