@@ -1,0 +1,15 @@
+name: Publish reference
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: Publish reference
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Publish reference
+        uses: essentialkaos/godoc-action@v1
