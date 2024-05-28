@@ -14,14 +14,13 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_9
 func Example_n09IntersectionOfPaths() {
-	// Two paths A and B are given by two pairs of positions:
-	// Enter elements directly:
-	// a1 := nvector.Vector{X: 0, Y: 0, Z: 1}.Normalize()
-	// a2 := nvector.Vector{X: -1, Y: 0, Z: 1}.Normalize()
-	// b1 := nvector.Vector{X: -2, Y: -2, Z: 4}.Normalize()
-	// b2 := nvector.Vector{X: -2, Y: 2, Z: 2}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Define a path from two given positions (at the surface of a spherical
+	// Earth), as the great circle that goes through the two points (assuming that
+	// the two positions are not antipodal).
+
+	// Path A is given by a1 and a2:
 	a1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(50),
@@ -36,6 +35,8 @@ func Example_n09IntersectionOfPaths() {
 		},
 		nvector.ZAxisNorth,
 	)
+
+	// While path B is given by b1 and b2:
 	b1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(60),
@@ -51,26 +52,34 @@ func Example_n09IntersectionOfPaths() {
 		nvector.ZAxisNorth,
 	)
 
+	// Find the position C where the two paths intersect.
+
 	// SOLUTION:
 
-	// Find the intersection between the two paths, n_EC_E:
+	// A convenient way to represent a great circle is by its normal vector (i.e.
+	// the normal vector to the plane containing the great circle). This normal
+	// vector is simply found by taking the cross product of the two n-vectors
+	// defining the great circle (path). Having the normal vectors to both paths,
+	// the intersection is now simply found by taking the cross product of the two
+	// normal vectors:
 	cTmp := a1.Cross(a2).Cross(b1.Cross(b2))
 
-	// n_EC_E_tmp is one of two solutions, the other is -n_EC_E_tmp. Select the
-	// one that is closest to n_EA1_E, by selecting sign from the dot product
-	// between n_EC_E_tmp and n_EA1_E:
+	// Note that there will be two places where the great circles intersect, and
+	// thus two solutions are found. Selecting the solution that is closest to
+	// e.g. a1 can be achieved by selecting the solution that has a positive dot
+	// product with a1 (or the mean position from Example 7 could be used instead
+	// of a1):
 	c := cTmp.Scale(math.Copysign(1, cTmp.Dot(a1)))
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(c, nvector.ZAxisNorth)
 
 	fmt.Printf(
-		"Intersection: lat, long = %.8f, %.8f deg\n",
+		"Intersection: lat, lon = %.8f, %.8f deg\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
-	// Intersection: lat, long = 74.16344802, 180.00000000 deg
+	// Intersection: lat, lon = 74.16344802, 180.00000000 deg
 }

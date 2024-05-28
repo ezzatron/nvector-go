@@ -14,11 +14,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_8
 func Example_n08AAndDistanceToB() {
-	// Position A is given as n_EA_E:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Position A is given as n-vector:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(80),
@@ -27,41 +25,60 @@ func Example_n08AAndDistanceToB() {
 		nvector.ZAxisNorth,
 	)
 
-	// The initial azimuth and great circle distance (s_AB), and Earth radius
-	// (r_Earth) are also given:
-	az := nvector.Radians(200)
-	gcd := 1000.0 // m
-	r := 6371e3   // m, mean Earth radius
+	// We also have an initial direction of travel given as an azimuth (bearing)
+	// relative to north (clockwise), and finally the distance to travel along a
+	// great circle is given:
+	azimuth := nvector.Radians(200)
+	gcd := 1000.0
 
-	// Find the destination point B, as n_EB_E ("The direct/first geodetic
-	// problem" for a sphere)
+	// Use Earth radius r:
+	r := 6371e3
+
+	// Find the destination point B.
+	//
+	// In geodesy, this is known as "The first geodetic problem" or "The direct
+	// geodetic problem" for a sphere, and we see that this is similar to Example
+	// 2, but now the delta is given as an azimuth and a great circle distance.
+	// "The second/inverse geodetic problem" for a sphere is already solved in
+	// Examples 1 and 5.
 
 	// SOLUTION:
 
-	// Step1: Find unit vectors for north and east (see equations (9) and (10)
-	// in Gade (2010):
+	// The azimuth (relative to north) is a singular quantity (undefined at the
+	// Poles), but from this angle we can find a (non-singular) quantity that is
+	// more convenient when working with vector algebra: a vector d that points in
+	// the initial direction. We find this from azimuth by first finding the north
+	// and east vectors at the start point, with unit lengths.
+	//
+	// Here we have assumed that our coordinate frame E has its z-axis along the
+	// rotational axis of the Earth, pointing towards the North Pole. Hence, this
+	// axis is given by [1, 0, 0]:
 	e := nvector.Vector{X: 1, Y: 0, Z: 0}.
 		Transform(nvector.ZAxisNorth.Transpose()).
 		Cross(a).
 		Normalize()
 	n := a.Cross(e)
 
-	// Step2: Find the initial direction vector d_E:
-	d := n.Scale(math.Cos(az)).Add(e.Scale(math.Sin(az)))
+	// The two vectors n and e are horizontal, orthogonal, and span the tangent
+	// plane at the initial position. A unit vector d in the direction of the
+	// azimuth is now given by:
+	d := n.Scale(math.Cos(azimuth)).Add(e.Scale(math.Sin(azimuth)))
 
-	// Step3: Find n_EB_E:
+	// With the initial direction given as d instead of azimuth, it is now quite
+	// simple to find b. We know that d and a are orthogonal, and they will span
+	// the plane where b will lie. Thus, we can use sin and cos in the same manner
+	// as above, with the angle traveled given by gcd / r:
 	b := a.Scale(math.Cos(gcd / r)).Add(d.Scale(math.Sin(gcd / r)))
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(b, nvector.ZAxisNorth)
 
 	fmt.Printf(
-		"Destination: lat, long = %.8f, %.8f deg\n",
+		"Destination: lat, lon = %.8f, %.8f deg\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
-	// Destination: lat, long = 79.99154867, -90.01769837 deg
+	// Destination: lat, lon = 79.99154867, -90.01769837 deg
 }

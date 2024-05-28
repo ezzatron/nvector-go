@@ -14,12 +14,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_5
 func Example_n05SurfaceDistance() {
-	// Position A and B are given as n_EA_E and n_EB_E:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Given two positions A and B as n-vectors:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(88),
@@ -35,24 +32,29 @@ func Example_n05SurfaceDistance() {
 		nvector.ZAxisNorth,
 	)
 
-	// m, mean Earth radius
+	// Find the surface distance (i.e. great circle distance). The heights of A
+	// and B are not relevant (i.e. if they do not have zero height, we seek the
+	// distance between the points that are at the surface of the Earth, directly
+	// above/below A and B). The Euclidean distance (chord length) should also be
+	// found.
+
+	// Use Earth radius r:
 	r := 6371e3
 
 	// SOLUTION:
 
-	// The great circle distance is given by equation (16) in Gade (2010):
-	// Well conditioned for all angles:
+	// Find the great circle distance:
 	gcd := math.Atan2(a.Cross(b).Norm(), a.Dot(b)) * r
 
-	// The Euclidean distance is given by:
+	// Find the Euclidean distance:
 	ed := b.Sub(a).Norm() * r
 
 	fmt.Printf(
-		"Great circle distance = %.8f km, Euclidean distance = %.8f km\n",
-		gcd/1000,
-		ed/1000,
+		"Great circle distance = %.8f m, Euclidean distance = %.8f m\n",
+		gcd,
+		ed,
 	)
 
 	// Output:
-	// Great circle distance = 332.45644411 km, Euclidean distance = 332.41872486 km
+	// Great circle distance = 332456.44410534 m, Euclidean distance = 332418.72485681 m
 }

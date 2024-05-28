@@ -13,16 +13,16 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_4
 func Example_n04LatLonToECEF() {
-	// Position B is given with lat, long and height:
-	bLat := 1.0
-	bLon := 2.0
-	bHeight := 3.0
+	// PROBLEM:
 
-	// Find the vector p_EB_E ("ECEF-vector")
+	// Geodetic latitude, longitude and height are given for position B:
+	bLat, bLon, bHeight := 1.0, 2.0, 3.0
+
+	// Find the ECEF-vector for this position.
 
 	// SOLUTION:
 
-	// Step1: Convert to n-vector:
+	// Step 1: First, the given latitude and longitude are converted to n-vector:
 	b := nvector.Position{
 		Vector: nvector.FromGeodeticCoordinates(
 			nvector.GeodeticCoordinates{
@@ -34,7 +34,7 @@ func Example_n04LatLonToECEF() {
 		Depth: -bHeight,
 	}
 
-	// Step2: Find the ECEF-vector p_EB_E:
+	// Step 2: Convert to an ECEF-vector:
 	pb := nvector.ToECEF(b, nvector.WGS84, nvector.ZAxisNorth)
 
 	fmt.Printf("p_EB_E = [%.8f, %.8f, %.8f] m\n", pb.X, pb.Y, pb.Z)

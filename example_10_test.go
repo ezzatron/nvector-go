@@ -14,13 +14,10 @@ import (
 //
 // See https://www.ffi.no/en/research/n-vector/#example_10
 func Example_n10CrossTrackDistance() {
-	// Position A1 and A2 and B are given as n_EA1_E, n_EA2_E, and n_EB_E:
-	// Enter elements directly:
-	// a1 := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// a2 := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
-	// b := nvector.Vector{X: 0, Y: -2, Z: 3}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Path A is given by the two n-vectors a1 and a2 (as in the previous
+	// example):
 	a1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(0),
@@ -35,6 +32,8 @@ func Example_n10CrossTrackDistance() {
 		},
 		nvector.ZAxisNorth,
 	)
+
+	// And a position B is given by b:
 	b := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(1),
@@ -43,20 +42,29 @@ func Example_n10CrossTrackDistance() {
 		nvector.ZAxisNorth,
 	)
 
-	r := 6371e3 // m, mean Earth radius
+	// Find the cross track distance between the path A (i.e. the great circle
+	// through a1 and a2) and the position B (i.e. the shortest distance at the
+	// surface, between the great circle and B). Also, find the Euclidean distance
+	// between B and the plane defined by the great circle.
 
-	// Find the cross track distance from path A to position B.
+	// Use Earth radius r:
+	r := 6371e3
 
 	// SOLUTION:
 
-	// Find the unit normal to the great circle between n_EA1_E and n_EA2_E:
+	// First, find the normal to the great circle, with direction given by the
+	// right hand rule and the direction of travel:
 	c := a1.Cross(a2).Normalize()
 
-	// Find the great circle cross track distance: (acos(x) - pi/2 = -asin(x))
+	// Find the great circle cross track distance:
 	gcd := -math.Asin(c.Dot(b)) * r
 
-	// Find the Euclidean cross track distance:
+	// Finding the Euclidean distance is even simpler, since it is the projection
+	// of b onto c, thus simply the dot product:
 	ed := -c.Dot(b) * r
+
+	// For both gcd and ed, positive answers means that B is to the right of the
+	// track.
 
 	fmt.Printf("Cross track distance = %.8f m, Euclidean = %.8f m\n", gcd, ed)
 

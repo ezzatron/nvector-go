@@ -69,33 +69,32 @@ import (
 // north, east and down, and find the direction (azimuth/bearing) to B, relative
 // to north. Use WGS-84 ellipsoid.
 //
-//   - Assume WGS-84 ellipsoid. The given depths are from the ellipsoid surface.
-//   - Use position A to define north, east, and down directions. (Due to the
-//     curvature of Earth and different directions to the North Pole, the north,
-//     east, and down directions will change (relative to Earth) for different
-//     places. Position A must be outside the poles for the north and east
-//     directions to be defined.
-//
 // See: https://www.ffi.no/en/research/n-vector/#example_1
 func Example_n01AAndBToDelta() {
-	// Positions A and B are given in (decimal) degrees and depths:
+	// PROBLEM:
 
-	// Position A:
-	aLat := 1.0
-	aLon := 2.0
-	aDepth := 3.0
-
-	// Position B:
-	bLat := 4.0
-	bLon := 5.0
-	bDepth := 6.0
+	// Given two positions, A and B as latitudes, longitudes and depths (relative
+	// to Earth, E):
+	aLat, aLon, aDepth := 1.0, 2.0, 3.0
+	bLat, bLon, bDepth := 4.0, 5.0, 6.0
 
 	// Find the exact vector between the two positions, given in meters north,
-	// east, and down, i.e. find p_AB_N.
+	// east, and down, and find the direction (azimuth) to B, relative to north.
+	//
+	// Details:
+	//
+	// - Assume WGS-84 ellipsoid. The given depths are from the ellipsoid surface.
+	// - Use position A to define north, east, and down directions. (Due to the
+	//   curvature of Earth and different directions to the North Pole, the north,
+	//   east, and down directions will change (relative to Earth) for different
+	//   places. Position A must be outside the poles for the north and east
+	//   directions to be defined.
 
 	// SOLUTION:
 
-	// Step1: Convert to n-vectors:
+	// Step 1
+	//
+	// First, the given latitudes and longitudes are converted to n-vectors:
 	a := nvector.Position{
 		Vector: nvector.FromGeodeticCoordinates(
 			nvector.GeodeticCoordinates{
@@ -117,26 +116,39 @@ func Example_n01AAndBToDelta() {
 		Depth: bDepth,
 	}
 
-	// Step2: Find p_AB_E (delta decomposed in E):
-	pe := nvector.Delta(a, b, nvector.WGS84, nvector.ZAxisNorth)
+	// Step 2
+	//
+	// When the positions are given as n-vectors (and depths), it is easy to find
+	// the delta vector decomposed in E. No ellipsoid is specified when calling
+	// the function, thus WGS-84 (default) is used:
+	abE := nvector.Delta(a, b, nvector.WGS84, nvector.ZAxisNorth)
 
-	// Step3: Find R_EN for position A:
-	r := nvector.ToRotationMatrix(a.Vector, nvector.ZAxisNorth)
+	// Step 3
+	//
+	// We now have the delta vector from A to B, but the three coordinates of the
+	// vector are along the Earth coordinate frame E, while we need the
+	// coordinates to be north, east and down. To get this, we define a
+	// North-East-Down coordinate frame called N, and then we need the rotation
+	// matrix (direction cosine matrix) rEN to go between E and N. We have a
+	// simple function that calculates rEN from an n-vector, and we use this
+	// function (using the n-vector at position A):
+	rEN := nvector.ToRotationMatrix(a.Vector, nvector.ZAxisNorth)
 
-	// Step4: Find p_AB_N
-	pn := pe.Transform(r.Transpose())
-	// (Note the transpose of R_EN: The "closest-rule" says that when decomposing,
-	// the frame in the subscript of the rotation matrix that is closest to the
-	// vector, should equal the frame where the vector is decomposed. Thus the
-	// calculation R_NE*p_AB_E is correct, since the vector is decomposed in E,
-	// and E is closest to the vector. In the above example we only had R_EN, and
-	// thus we must transpose it: R_EN' = R_NE)
+	// Step 4
+	//
+	// Now the delta vector is easily decomposed in N. Since the vector is
+	// decomposed in E, we must use rNE (rNE is the transpose of rEN):
+	abN := abE.Transform(rEN.Transpose())
 
-	// Step5: Also find the direction (azimuth) to B, relative to north:
-	az := math.Atan2(pn.Y, pn.X)
+	// Step 5
+	//
+	// The three components of abN are the north, east and down displacements from
+	// A to B in meters. The azimuth is simply found from element 1 and 2 of the
+	// vector (the north and east components):
+	azimuth := math.Atan2(abN.Y, abN.X)
 
-	fmt.Printf("Delta north, east, down = %.8f, %.8f, %.8f m\n", pn.X, pn.Y, pn.Z)
-	fmt.Printf("Azimuth = %.8f deg\n", nvector.Degrees(az))
+	fmt.Printf("Delta north, east, down = %.8f, %.8f, %.8f m\n", abN.X, abN.Y, abN.Z)
+	fmt.Printf("Azimuth = %.8f deg\n", nvector.Degrees(azimuth))
 
 	// Output:
 	// Delta north, east, down = 331730.23478089, 332997.87498927, 17404.27136194 m
@@ -169,61 +181,74 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_2
 func Example_n02BAndDeltaToC() {
-	// delta vector from B to C, decomposed in B is given:
-	bc := nvector.Vector{X: 3000, Y: 2000, Z: 100}
+	// PROBLEM:
 
-	// Position and orientation of B is given:
-	// Normalize to get unit length of vector
+	// A radar or sonar attached to a vehicle B (Body coordinate frame) measures
+	// the distance and direction to an object C. We assume that the distance and
+	// two angles measured by the sensor (typically bearing and elevation relative
+	// to B) are already converted (by converting from spherical to Cartesian
+	// coordinates) to the vector bcB (i.e. the vector from B to C, decomposed in
+	// B):
+	bcB := nvector.Vector{X: 3000, Y: 2000, Z: 100}
+
+	// The position of B is given as an n-vector and a depth:
 	b := nvector.Position{
 		Vector: nvector.Vector{X: 1, Y: 2, Z: 3}.Normalize(),
 		Depth:  -400.0,
 	}
-	// the three angles are yaw, pitch, and roll
-	r := nvector.EulerZYXToRotationMatrix(nvector.EulerZYX{
+
+	// The orientation (attitude) of B is given as rNB, specified as yaw, pitch,
+	// roll:
+	rNB := nvector.EulerZYXToRotationMatrix(nvector.EulerZYX{
 		Z: nvector.Radians(10),
 		Y: nvector.Radians(20),
 		X: nvector.Radians(30),
 	})
 
-	// A custom reference ellipsoid is given (replacing WGS-84):
-	// (WGS-72)
+	// Use the WGS-72 ellipsoid:
 	e := nvector.WGS72
 
-	// Find the position of C.
+	// Find the exact position of object C as an n-vector and a depth.
 
 	// SOLUTION:
 
-	// Step1: Find R_EN:
-	rn := nvector.ToRotationMatrix(b.Vector, nvector.ZAxisNorth)
+	// Step 1
+	//
+	// The delta vector is given in B. It should be decomposed in E before using
+	// it, and thus we need rEB. This matrix is found from the matrices rEN and
+	// rNB, and we need to find rEN, as in Example 1:
+	rEN := nvector.ToRotationMatrix(b.Vector, nvector.ZAxisNorth)
 
-	// Step2: Find R_EB, from R_EN and R_NB:
-	// Note: closest frames cancel
-	rb := rn.Multiply(r)
+	// Step 2
+	//
+	// Now, we can find rEB y using that the closest frames cancel when
+	// multiplying two rotation matrices (i.e. N is cancelled here):
+	rEB := rEN.Multiply(rNB)
 
-	// Step3: Decompose the delta vector in E:
-	// no transpose of R_EB, since the vector is in B
-	bce := bc.Transform(rb)
+	// Step 3
+	//
+	// The delta vector is now decomposed in E:
+	bcE := bcB.Transform(rEB)
 
-	// Step4: Find the position of C, using the functions that goes from one
-	// position and a delta, to a new position:
-	c := nvector.Destination(b, bce, e, nvector.ZAxisNorth)
+	// Step 4
+	//
+	// It is now easy to find the position of C using destination (with custom
+	// ellipsoid overriding the default WGS-84):
+	c := nvector.Destination(b, bcE, e, nvector.ZAxisNorth)
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(c.Vector, nvector.ZAxisNorth)
-
-	// Here we also assume that the user wants the output to be height (= -depth):
 	h := -c.Depth
 
 	fmt.Printf(
-		"Pos C: lat, long = %.8f, %.8f deg, height = %.8f m\n",
+		"Pos C: lat, lon = %.8f, %.8f deg, height = %.8f m\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 		h,
 	)
 
 	// Output:
-	// Pos C: lat, long = 53.32637826, 63.46812344 deg, height = 406.00719607 m
+	// Pos C: lat, lon = 53.32637826, 63.46812344 deg, height = 406.00719607 m
 }
 ```
 
@@ -252,29 +277,37 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_3
 func Example_n03ECEFToLatLon() {
-	// Position B is given as p_EB_E ("ECEF-vector")
-	b := nvector.Vector{X: 0.71, Y: -0.72, Z: 0.1}.Scale(6371e3) // m
+	// PROBLEM:
 
-	// Find position B as geodetic latitude, longitude and height
+	// Position B is given as an “ECEF-vector” pb (i.e. a vector from E, the
+	// center of the Earth, to B, decomposed in E):
+	pb := nvector.Vector{X: 0.71, Y: -0.72, Z: 0.1}.Scale(6371e3)
+
+	// Find the geodetic latitude, longitude and height, assuming WGS-84
+	// ellipsoid.
 
 	// SOLUTION:
 
-	// Find n-vector from the p-vector:
-	vb := nvector.FromECEF(b, nvector.WGS84, nvector.ZAxisNorth)
+	// Step 1
+	//
+	// We have a function that converts ECEF-vectors to n-vectors:
+	b := nvector.FromECEF(pb, nvector.WGS84, nvector.ZAxisNorth)
 
-	// Convert to lat, long and height:
-	gc := nvector.ToGeodeticCoordinates(vb.Vector, nvector.ZAxisNorth)
-	h := -vb.Depth
+	// Step 2
+	//
+	// Find latitude, longitude and height:
+	gc := nvector.ToGeodeticCoordinates(b.Vector, nvector.ZAxisNorth)
+	h := -b.Depth
 
 	fmt.Printf(
-		"Pos B: lat, long = %.8f, %.8f deg, height = %.8f m\n",
+		"Pos B: lat, lon = %.8f, %.8f deg, height = %.8f m\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 		h,
 	)
 
 	// Output:
-	// Pos B: lat, long = 5.68507573, -45.40066326 deg, height = 95772.10761822 m
+	// Pos B: lat, lon = 5.68507573, -45.40066326 deg, height = 95772.10761822 m
 }
 ```
 
@@ -303,16 +336,16 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_4
 func Example_n04LatLonToECEF() {
-	// Position B is given with lat, long and height:
-	bLat := 1.0
-	bLon := 2.0
-	bHeight := 3.0
+	// PROBLEM:
 
-	// Find the vector p_EB_E ("ECEF-vector")
+	// Geodetic latitude, longitude and height are given for position B:
+	bLat, bLon, bHeight := 1.0, 2.0, 3.0
+
+	// Find the ECEF-vector for this position.
 
 	// SOLUTION:
 
-	// Step1: Convert to n-vector:
+	// Step 1: First, the given latitude and longitude are converted to n-vector:
 	b := nvector.Position{
 		Vector: nvector.FromGeodeticCoordinates(
 			nvector.GeodeticCoordinates{
@@ -324,7 +357,7 @@ func Example_n04LatLonToECEF() {
 		Depth: -bHeight,
 	}
 
-	// Step2: Find the ECEF-vector p_EB_E:
+	// Step 2: Convert to an ECEF-vector:
 	pb := nvector.ToECEF(b, nvector.WGS84, nvector.ZAxisNorth)
 
 	fmt.Printf("p_EB_E = [%.8f, %.8f, %.8f] m\n", pb.X, pb.Y, pb.Z)
@@ -360,12 +393,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_5
 func Example_n05SurfaceDistance() {
-	// Position A and B are given as n_EA_E and n_EB_E:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Given two positions A and B as n-vectors:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(88),
@@ -381,26 +411,31 @@ func Example_n05SurfaceDistance() {
 		nvector.ZAxisNorth,
 	)
 
-	// m, mean Earth radius
+	// Find the surface distance (i.e. great circle distance). The heights of A
+	// and B are not relevant (i.e. if they do not have zero height, we seek the
+	// distance between the points that are at the surface of the Earth, directly
+	// above/below A and B). The Euclidean distance (chord length) should also be
+	// found.
+
+	// Use Earth radius r:
 	r := 6371e3
 
 	// SOLUTION:
 
-	// The great circle distance is given by equation (16) in Gade (2010):
-	// Well conditioned for all angles:
+	// Find the great circle distance:
 	gcd := math.Atan2(a.Cross(b).Norm(), a.Dot(b)) * r
 
-	// The Euclidean distance is given by:
+	// Find the Euclidean distance:
 	ed := b.Sub(a).Norm() * r
 
 	fmt.Printf(
-		"Great circle distance = %.8f km, Euclidean distance = %.8f km\n",
-		gcd/1000,
-		ed/1000,
+		"Great circle distance = %.8f m, Euclidean distance = %.8f m\n",
+		gcd,
+		ed,
 	)
 
 	// Output:
-	// Great circle distance = 332.45644411 km, Euclidean distance = 332.41872486 km
+	// Great circle distance = 332456.44410534 m, Euclidean distance = 332418.72485681 m
 }
 ```
 
@@ -429,12 +464,10 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_6
 func Example_n06InterpolatedPosition() {
-	// Position B is given at time t0 as n_EB_E_t0 and at time t1 as n_EB_E_t1:
-	// Enter elements directly:
-	// pt0 := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// pt1 := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Given the position of B at time t0 and t1, pt0 and pt1:
+	t0, t1, ti := 10.0, 20.0, 16.0
 	pt0 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(89.9),
@@ -450,30 +483,25 @@ func Example_n06InterpolatedPosition() {
 		nvector.ZAxisNorth,
 	)
 
-	// The times are given as:
-	t0 := 10.0
-	t1 := 20.0
-	ti := 16.0 // time of interpolation
-
-	// Find the interpolated position at time ti, n_EB_E_ti
+	// Find an interpolated position at time ti, pti. All positions are given as
+	// n-vectors.
 
 	// SOLUTION:
 
-	// Using standard interpolation:
+	// Standard interpolation can be used directly with n-vectors:
 	pti := pt0.Add(pt1.Sub(pt0).Scale((ti - t0) / (t1 - t0)))
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(pti, nvector.ZAxisNorth)
 
 	fmt.Printf(
-		"Interpolated position: lat, long = %.8f, %.8f deg\n",
+		"Interpolated position: lat, lon = %.8f, %.8f deg\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
-	// Interpolated position: lat, long = 89.91282200, 173.41322445 deg
+	// Interpolated position: lat, lon = 89.91282200, 173.41322445 deg
 }
 ```
 
@@ -501,13 +529,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_7
 func Example_n07MeanPosition() {
-	// Three positions A, B and C are given:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
-	// c := nvector.Vector{X: 0, Y: -2, Z: 3}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in degrees:
+	// Three positions A, B, and C are given as n-vectors:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(90),
@@ -530,9 +554,12 @@ func Example_n07MeanPosition() {
 		nvector.ZAxisNorth,
 	)
 
+	// Find the mean position, M. Note that the calculation is independent of the
+	// heights/depths of the positions.
+
 	// SOLUTION:
 
-	// Find the horizontal mean position, M:
+	// The mean position is simply given by the mean n-vector:
 	m := a.Add(b).Add(c).Normalize()
 
 	fmt.Printf("Mean position: [%.8f, %.8f, %.8f]\n", m.X, m.Y, m.Z)
@@ -568,11 +595,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_8
 func Example_n08AAndDistanceToB() {
-	// Position A is given as n_EA_E:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Position A is given as n-vector:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(80),
@@ -581,43 +606,62 @@ func Example_n08AAndDistanceToB() {
 		nvector.ZAxisNorth,
 	)
 
-	// The initial azimuth and great circle distance (s_AB), and Earth radius
-	// (r_Earth) are also given:
-	az := nvector.Radians(200)
-	gcd := 1000.0 // m
-	r := 6371e3   // m, mean Earth radius
+	// We also have an initial direction of travel given as an azimuth (bearing)
+	// relative to north (clockwise), and finally the distance to travel along a
+	// great circle is given:
+	azimuth := nvector.Radians(200)
+	gcd := 1000.0
 
-	// Find the destination point B, as n_EB_E ("The direct/first geodetic
-	// problem" for a sphere)
+	// Use Earth radius r:
+	r := 6371e3
+
+	// Find the destination point B.
+	//
+	// In geodesy, this is known as "The first geodetic problem" or "The direct
+	// geodetic problem" for a sphere, and we see that this is similar to Example
+	// 2, but now the delta is given as an azimuth and a great circle distance.
+	// "The second/inverse geodetic problem" for a sphere is already solved in
+	// Examples 1 and 5.
 
 	// SOLUTION:
 
-	// Step1: Find unit vectors for north and east (see equations (9) and (10)
-	// in Gade (2010):
+	// The azimuth (relative to north) is a singular quantity (undefined at the
+	// Poles), but from this angle we can find a (non-singular) quantity that is
+	// more convenient when working with vector algebra: a vector d that points in
+	// the initial direction. We find this from azimuth by first finding the north
+	// and east vectors at the start point, with unit lengths.
+	//
+	// Here we have assumed that our coordinate frame E has its z-axis along the
+	// rotational axis of the Earth, pointing towards the North Pole. Hence, this
+	// axis is given by [1, 0, 0]:
 	e := nvector.Vector{X: 1, Y: 0, Z: 0}.
 		Transform(nvector.ZAxisNorth.Transpose()).
 		Cross(a).
 		Normalize()
 	n := a.Cross(e)
 
-	// Step2: Find the initial direction vector d_E:
-	d := n.Scale(math.Cos(az)).Add(e.Scale(math.Sin(az)))
+	// The two vectors n and e are horizontal, orthogonal, and span the tangent
+	// plane at the initial position. A unit vector d in the direction of the
+	// azimuth is now given by:
+	d := n.Scale(math.Cos(azimuth)).Add(e.Scale(math.Sin(azimuth)))
 
-	// Step3: Find n_EB_E:
+	// With the initial direction given as d instead of azimuth, it is now quite
+	// simple to find b. We know that d and a are orthogonal, and they will span
+	// the plane where b will lie. Thus, we can use sin and cos in the same manner
+	// as above, with the angle traveled given by gcd / r:
 	b := a.Scale(math.Cos(gcd / r)).Add(d.Scale(math.Sin(gcd / r)))
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(b, nvector.ZAxisNorth)
 
 	fmt.Printf(
-		"Destination: lat, long = %.8f, %.8f deg\n",
+		"Destination: lat, lon = %.8f, %.8f deg\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
-	// Destination: lat, long = 79.99154867, -90.01769837 deg
+	// Destination: lat, lon = 79.99154867, -90.01769837 deg
 }
 ```
 
@@ -648,14 +692,13 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_9
 func Example_n09IntersectionOfPaths() {
-	// Two paths A and B are given by two pairs of positions:
-	// Enter elements directly:
-	// a1 := nvector.Vector{X: 0, Y: 0, Z: 1}.Normalize()
-	// a2 := nvector.Vector{X: -1, Y: 0, Z: 1}.Normalize()
-	// b1 := nvector.Vector{X: -2, Y: -2, Z: 4}.Normalize()
-	// b2 := nvector.Vector{X: -2, Y: 2, Z: 2}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Define a path from two given positions (at the surface of a spherical
+	// Earth), as the great circle that goes through the two points (assuming that
+	// the two positions are not antipodal).
+
+	// Path A is given by a1 and a2:
 	a1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(50),
@@ -670,6 +713,8 @@ func Example_n09IntersectionOfPaths() {
 		},
 		nvector.ZAxisNorth,
 	)
+
+	// While path B is given by b1 and b2:
 	b1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(60),
@@ -685,28 +730,36 @@ func Example_n09IntersectionOfPaths() {
 		nvector.ZAxisNorth,
 	)
 
+	// Find the position C where the two paths intersect.
+
 	// SOLUTION:
 
-	// Find the intersection between the two paths, n_EC_E:
+	// A convenient way to represent a great circle is by its normal vector (i.e.
+	// the normal vector to the plane containing the great circle). This normal
+	// vector is simply found by taking the cross product of the two n-vectors
+	// defining the great circle (path). Having the normal vectors to both paths,
+	// the intersection is now simply found by taking the cross product of the two
+	// normal vectors:
 	cTmp := a1.Cross(a2).Cross(b1.Cross(b2))
 
-	// n_EC_E_tmp is one of two solutions, the other is -n_EC_E_tmp. Select the
-	// one that is closest to n_EA1_E, by selecting sign from the dot product
-	// between n_EC_E_tmp and n_EA1_E:
+	// Note that there will be two places where the great circles intersect, and
+	// thus two solutions are found. Selecting the solution that is closest to
+	// e.g. a1 can be achieved by selecting the solution that has a positive dot
+	// product with a1 (or the mean position from Example 7 could be used instead
+	// of a1):
 	c := cTmp.Scale(math.Copysign(1, cTmp.Dot(a1)))
 
-	// When displaying the resulting position for humans, it is more convenient
-	// to see lat, long:
+	// Use human-friendly outputs:
 	gc := nvector.ToGeodeticCoordinates(c, nvector.ZAxisNorth)
 
 	fmt.Printf(
-		"Intersection: lat, long = %.8f, %.8f deg\n",
+		"Intersection: lat, lon = %.8f, %.8f deg\n",
 		nvector.Degrees(gc.Latitude),
 		nvector.Degrees(gc.Longitude),
 	)
 
 	// Output:
-	// Intersection: lat, long = 74.16344802, 180.00000000 deg
+	// Intersection: lat, lon = 74.16344802, 180.00000000 deg
 }
 ```
 
@@ -737,13 +790,10 @@ import (
 //
 // See https://www.ffi.no/en/research/n-vector/#example_10
 func Example_n10CrossTrackDistance() {
-	// Position A1 and A2 and B are given as n_EA1_E, n_EA2_E, and n_EB_E:
-	// Enter elements directly:
-	// a1 := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// a2 := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
-	// b := nvector.Vector{X: 0, Y: -2, Z: 3}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in deg:
+	// Path A is given by the two n-vectors a1 and a2 (as in the previous
+	// example):
 	a1 := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(0),
@@ -758,6 +808,8 @@ func Example_n10CrossTrackDistance() {
 		},
 		nvector.ZAxisNorth,
 	)
+
+	// And a position B is given by b:
 	b := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(1),
@@ -766,20 +818,29 @@ func Example_n10CrossTrackDistance() {
 		nvector.ZAxisNorth,
 	)
 
-	r := 6371e3 // m, mean Earth radius
+	// Find the cross track distance between the path A (i.e. the great circle
+	// through a1 and a2) and the position B (i.e. the shortest distance at the
+	// surface, between the great circle and B). Also, find the Euclidean distance
+	// between B and the plane defined by the great circle.
 
-	// Find the cross track distance from path A to position B.
+	// Use Earth radius r:
+	r := 6371e3
 
 	// SOLUTION:
 
-	// Find the unit normal to the great circle between n_EA1_E and n_EA2_E:
+	// First, find the normal to the great circle, with direction given by the
+	// right hand rule and the direction of travel:
 	c := a1.Cross(a2).Normalize()
 
-	// Find the great circle cross track distance: (acos(x) - pi/2 = -asin(x))
+	// Find the great circle cross track distance:
 	gcd := -math.Asin(c.Dot(b)) * r
 
-	// Find the Euclidean cross track distance:
+	// Finding the Euclidean distance is even simpler, since it is the projection
+	// of b onto c, thus simply the dot product:
 	ed := -c.Dot(b) * r
+
+	// For both gcd and ed, positive answers means that B is to the right of the
+	// track.
 
 	fmt.Printf("Cross track distance = %.8f m, Euclidean = %.8f m\n", gcd, ed)
 

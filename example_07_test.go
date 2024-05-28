@@ -12,13 +12,9 @@ import (
 //
 // See: https://www.ffi.no/en/research/n-vector/#example_7
 func Example_n07MeanPosition() {
-	// Three positions A, B and C are given:
-	// Enter elements directly:
-	// a := nvector.Vector{X: 1, Y: 0, Z: -2}.Normalize()
-	// b := nvector.Vector{X: -1, Y: -2, Z: 0}.Normalize()
-	// c := nvector.Vector{X: 0, Y: -2, Z: 3}.Normalize()
+	// PROBLEM:
 
-	// or input as lat/long in degrees:
+	// Three positions A, B, and C are given as n-vectors:
 	a := nvector.FromGeodeticCoordinates(
 		nvector.GeodeticCoordinates{
 			Latitude:  nvector.Radians(90),
@@ -41,9 +37,12 @@ func Example_n07MeanPosition() {
 		nvector.ZAxisNorth,
 	)
 
+	// Find the mean position, M. Note that the calculation is independent of the
+	// heights/depths of the positions.
+
 	// SOLUTION:
 
-	// Find the horizontal mean position, M:
+	// The mean position is simply given by the mean n-vector:
 	m := a.Add(b).Add(c).Normalize()
 
 	fmt.Printf("Mean position: [%.8f, %.8f, %.8f]\n", m.X, m.Y, m.Z)
