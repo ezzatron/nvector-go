@@ -22,9 +22,8 @@ func EcefVector(e nvector.Ellipsoid) *rapid.Generator[nvector.Vector] {
 // Ellipsoid creates a rapid generator for ellipsoids.
 func Ellipsoid() *rapid.Generator[nvector.Ellipsoid] {
 	return rapid.SampledFrom([]nvector.Ellipsoid{
+		nvector.WGS84,
 		nvector.GRS80,
 		nvector.WGS72,
-		nvector.WGS84,
-		nvector.WGS84Sphere,
 	})
 }

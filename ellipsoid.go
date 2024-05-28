@@ -22,10 +22,9 @@ var (
 	//
 	// See: https://github.com/chrisveness/geodesy/blob/761587cd748bd9f7c9825195eba4a9fc5891b859/latlon-ellipsoidal-datum.js#L39
 	WGS84 = Ellipsoid{6378137, 6356752.314245179, 1 / 298.257223563}
-
-	// WGS84Sphere is a sphere with the same semi-major axis as the WGS-84
-	// ellipsoid.
-	//
-	// See: https://github.com/chrisveness/geodesy/blob/761587cd748bd9f7c9825195eba4a9fc5891b859/latlon-ellipsoidal-datum.js#L39
-	WGS84Sphere = Ellipsoid{6378137, 6378137, 0}
 )
+
+// Sphere returns a spherical ellipsoid with the given radius.
+func Sphere(radius float64) Ellipsoid {
+	return Ellipsoid{radius, radius, 0}
+}

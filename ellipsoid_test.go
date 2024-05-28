@@ -58,11 +58,11 @@ func Test_WGS84(t *testing.T) {
 	}
 }
 
-func Test_WGS84Sphere(t *testing.T) {
-	got := WGS84Sphere
-	wantA := 6378137.0
+func Test_Sphere(t *testing.T) {
+	got := Sphere(6371e3)
+	wantA := 6371e3
 	wantF := 0.0
-	wantB := wantA * (1 - wantF)
+	wantB := 6371e3
 
 	if eq, ineq := equality.EqualToFloat64(got.SemiMajorAxis, wantA, 0); !eq {
 		equality.ReportInequality(t, "SemiMajorAxis", ineq)
