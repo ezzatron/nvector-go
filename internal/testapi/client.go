@@ -3,6 +3,7 @@ package testapi
 import (
 	"context"
 	"errors"
+	"os"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,7 +15,12 @@ type Client struct {
 
 // NewClient creates a new websocket client for calling the n-vector test API.
 func NewClient() (*Client, error) {
-	c, _, err := websocket.DefaultDialer.Dial("ws://localhost:17357/", nil)
+	url := os.Getenv("TEST_API_URL")
+	if url == "" {
+		url = "ws://localhost:17357/"
+	}
+
+	c, _, err := websocket.DefaultDialer.Dial(url, nil)
 	if err != nil {
 		return nil, err
 	}

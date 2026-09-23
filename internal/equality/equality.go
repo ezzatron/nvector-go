@@ -192,5 +192,5 @@ func ReportInequalities(
 
 // TestErrorReporter is an interface for reporting testing errors.
 type TestErrorReporter interface {
-	Errorf(format string, args ...interface{})
+	Errorf(format string, args ...any)
 }
