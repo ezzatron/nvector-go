@@ -1,6 +1,8 @@
 package rapidgen
 
 import (
+	"math"
+
 	"github.com/ezzatron/nvector-go"
 	"pgregory.net/rapid"
 )
@@ -9,8 +11,8 @@ import (
 func GeodeticCoordinates() *rapid.Generator[nvector.GeodeticCoordinates] {
 	return rapid.Custom(func(t *rapid.T) nvector.GeodeticCoordinates {
 		return nvector.GeodeticCoordinates{
-			Latitude:  rapid.Float64Range(-90, 90).Draw(t, "latitude"),
-			Longitude: rapid.Float64Range(-180, 180).Draw(t, "longitude"),
+			Latitude:  rapid.Float64Range(-math.Pi/2, math.Pi/2).Draw(t, "latitude"),
+			Longitude: rapid.Float64Range(-math.Pi, math.Pi).Draw(t, "longitude"),
 		}
 	})
 }
