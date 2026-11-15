@@ -100,7 +100,7 @@ func EqualToMatrix(
 // EqualToRadians returns a boolean indicating whether two angles are equal
 // within a tolerance, and the inequality.
 func EqualToRadians(a, b, tol float64) (bool, Float64Inequality) {
-	diff := math.Pi - math.Abs(math.Abs(a-b)-math.Pi)
+	diff := math.Abs(math.Remainder(a-b, 2*math.Pi))
 
 	return diff <= tol, Float64Inequality{diff, tol, a, b}
 }
