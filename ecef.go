@@ -57,6 +57,8 @@ func FromECEF(v Vector, e Ellipsoid, f Matrix) Position {
 
 // ToECEF converts an n-vector and depth to an ECEF position vector.
 //
+// The n-vector must have unit length.
+//
 // f is the coordinate frame in which the vectors are decomposed.
 //
 // See: https://github.com/FFI-no/n-vector/blob/f77f43d18ddb6b8ea4e1a8bb23a53700af965abb/nvector/n_EB_E2p_EB_E.m

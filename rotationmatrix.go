@@ -14,6 +14,8 @@ func FromRotationMatrix(r Matrix) Vector {
 
 // ToRotationMatrix converts n-vector to a rotation matrix.
 //
+// The n-vector must have unit length.
+//
 // f is the coordinate frame in which the n-vector is decomposed.
 //
 // See: https://github.com/FFI-no/n-vector/blob/82d749a67cc9f332f48c51aa969cdc277b4199f2/nvector/n_E2R_EN.m

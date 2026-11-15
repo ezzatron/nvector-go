@@ -10,6 +10,11 @@ Versioning].
 
 ## Unreleased
 
+### Changed
+
+- Documented that n-vectors passed to the ECEF and rotation matrix conversion
+  functions must have unit length.
+
 ### Fixed
 
 - Fixed the sign of the Y Euler angle returned by `RotationMatrixToEulerZYX` at
