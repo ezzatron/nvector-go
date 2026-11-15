@@ -121,7 +121,7 @@ func RotationMatrixToEulerZYX(r Matrix) EulerZYX {
 	} else {
 		// In singularity (or close to), i.e. y = +pi/2 or -pi/2:
 		// Selecting y = +-pi/2, with correct sign
-		a.Y = math.Copysign(math.Pi/2, r.ZX)
+		a.Y = -math.Copysign(math.Pi/2, r.ZX)
 
 		// Only the sum/difference of x and z is now given, choosing x = 0:
 		a.X = 0

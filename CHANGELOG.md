@@ -10,6 +10,11 @@ Versioning].
 
 ## Unreleased
 
+### Fixed
+
+- Fixed the sign of the Y Euler angle returned by `RotationMatrixToEulerZYX` at
+  the Euler singularity.
+
 ## [v0.2.0] - 2024-05-28
 
 [v0.2.0]: https://github.com/ezzatron/nvector-go/releases/tag/v0.2.0

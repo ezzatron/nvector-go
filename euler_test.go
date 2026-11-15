@@ -115,17 +115,25 @@ func Test_RotationMatrixToEulerXYZ(t *testing.T) {
 	})
 
 	t.Run("handles Euler angle singularity", func(t *testing.T) {
-		r := Matrix{
-			0, 0, 1,
-			0, 1, 0,
-			1, 0, 0,
+		tests := []struct {
+			name string
+			y    float64
+		}{
+			{"positive y", math.Pi / 2},
+			{"negative y", -math.Pi / 2},
 		}
 
-		want := EulerXYZ{0.0, math.Pi / 2, 0.0}
-		got := RotationMatrixToEulerXYZ(r)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				r := EulerXYZToRotationMatrix(EulerXYZ{X: 0, Y: tt.y, Z: 0.3})
 
-		if eq, ineq := equality.EqualToEulerAnglesXYZ(got, want, 1e-15); !eq {
-			equality.ReportInequalities(t, ineq)
+				want := EulerXYZ{0, tt.y, 0.3}
+				got := RotationMatrixToEulerXYZ(r)
+
+				if eq, ineq := equality.EqualToEulerAnglesXYZ(got, want, 1e-15); !eq {
+					equality.ReportInequalities(t, ineq)
+				}
+			})
 		}
 	})
 }
@@ -167,17 +175,25 @@ func Test_RotationMatrixToEulerZYX(t *testing.T) {
 	})
 
 	t.Run("handles Euler angle singularity", func(t *testing.T) {
-		r := Matrix{
-			0, 0, 1,
-			0, 1, 0,
-			1, 0, 0,
+		tests := []struct {
+			name string
+			y    float64
+		}{
+			{"positive y", math.Pi / 2},
+			{"negative y", -math.Pi / 2},
 		}
 
-		want := EulerZYX{0.0, math.Pi / 2, -0.0}
-		got := RotationMatrixToEulerZYX(r)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				r := EulerZYXToRotationMatrix(EulerZYX{Z: 0.3, Y: tt.y, X: 0})
 
-		if eq, ineq := equality.EqualToEulerAnglesZYX(got, want, 1e-15); !eq {
-			equality.ReportInequalities(t, ineq)
+				want := EulerZYX{0.3, tt.y, 0}
+				got := RotationMatrixToEulerZYX(r)
+
+				if eq, ineq := equality.EqualToEulerAnglesZYX(got, want, 1e-15); !eq {
+					equality.ReportInequalities(t, ineq)
+				}
+			})
 		}
 	})
 }
