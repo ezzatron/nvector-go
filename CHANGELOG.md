@@ -14,6 +14,7 @@ Versioning].
 
 - Fixed the sign of the Y Euler angle returned by `RotationMatrixToEulerZYX` at
   the Euler singularity.
+- Fixed `Vector.Norm` and `Vector.Normalize` for zero and very large vectors.
 
 ## [v0.2.0] - 2024-05-28
 

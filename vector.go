@@ -34,12 +34,17 @@ func (v Vector) Dot(w Vector) float64 {
 
 // Norm returns the Euclidean norm of v.
 func (v Vector) Norm() float64 {
-	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
+	return math.Hypot(v.X, math.Hypot(v.Y, v.Z))
 }
 
 // Normalize returns a vector in the same direction as v but with norm 1.
 func (v Vector) Normalize() Vector {
-	return v.Scale(1 / v.Norm())
+	n := v.Norm()
+	if n == 0 {
+		return Vector{X: 1}
+	}
+
+	return v.Scale(1 / n)
 }
 
 // Scale returns v scaled by s.
