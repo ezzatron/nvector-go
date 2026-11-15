@@ -97,8 +97,7 @@ func Test_RotationMatrixToEulerXYZ(t *testing.T) {
 					math.Pow(r.YZ, 2) +
 					math.Pow(r.ZZ, 2)) / 2,
 				)
-
-				return cy > 1e-14
+				return cy > (math.Nextafter(1, 2)-1)*10
 			}).Draw(t, "r")
 
 			want, err := client.RotationMatrixToEulerXYZ(ctx, r)
@@ -157,8 +156,7 @@ func Test_RotationMatrixToEulerZYX(t *testing.T) {
 					math.Pow(r.ZY, 2) +
 					math.Pow(r.ZZ, 2)) / 2,
 				)
-
-				return cy > 1e-14
+				return cy > (math.Nextafter(1, 2)-1)*10
 			}).Draw(t, "r")
 
 			want, err := client.RotationMatrixToEulerZYX(ctx, r)
